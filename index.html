@@ -1,11 +1,11 @@
-<!-- V6.5 — Searchable Knowledge Base; legacy FAQ dropdown replaced -->
+<!-- V6.5 — Searchable Knowledge Base; legacy FAQ dropdown replaced; attorney probate flow refined -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SMH Oklahoma — Sales Call Flow</title>
+<title>SMH Oklahoma — Sales Call Flow V6.4.6 V6.4.6</title>
 <!-- V5.15 — Upper-right transparent Spanish voicemail chat-bubble button -->
 <!-- V5.13 — Spanish voicemail button with Foreclosure + Probate scripts -->
 <!-- V5.5 — Floating Windows-style Call Notes with collapse/restore and drag -->
@@ -2655,6 +2655,10 @@
 .kb-reader-category { margin-top:5px; color:#64748b; font:700 10px/1.4 Arial,sans-serif; text-transform:uppercase; letter-spacing:.09em; }
 .kb-reader-close { flex:0 0 auto; width:36px; height:36px; border:1px solid #cbd5e1; border-radius:9px; background:#fff; color:#334155; font:24px/1 Arial,sans-serif; cursor:pointer; }
 .kb-reader-close:hover { background:#e2e8f0; }
+.kb-reader-actions { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+.kb-reader-copy { border:1px solid #cbd5e1; border-radius:8px; padding:9px 12px; background:#fff; color:#1d4ed8; font:700 13px Arial,sans-serif; cursor:pointer; white-space:nowrap; }
+.kb-reader-copy:hover { background:#eff6ff; border-color:#93c5fd; }
+.kb-reader-copy:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
 .kb-reader-content { padding:24px; overflow:auto; font:16px/1.75 Arial,sans-serif; white-space:pre-line; overflow-wrap:anywhere; }
 /* Ensure cloned article answers remain visible outside the expanded KB card. */
 .kb-reader-content .kb-result-answer { display:block !important; padding:0; font:inherit; color:inherit; overflow:visible; cursor:default; }
@@ -2678,6 +2682,40 @@
   .kb-reader-content p,
   .kb-reader-content li { color: #374151 !important; }
   .kb-reader-close { color: #374151 !important; }
+</style>
+
+
+<style id="probate-attorney-flow-styles">
+#probateAttorneyFlowOverlay{position:fixed;inset:0;z-index:100500;background:rgba(15,23,42,.62);display:none;align-items:center;justify-content:center;padding:18px;}
+#probateAttorneyFlowOverlay.is-visible{display:flex;}
+#probateAttorneyFlowModal{width:min(760px,96vw);max-height:92vh;overflow:auto;background:#fff;color:#111827;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.35);font-family:Arial,sans-serif;}
+.paf-header{position:sticky;top:0;background:#111827;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:1;}
+.paf-header h2{font-size:18px;margin:0;line-height:1.3;}
+.paf-close{border:0;background:transparent;color:#fff;font-size:28px;cursor:pointer;line-height:1;padding:0 4px;}
+.paf-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:16px 20px 0;}
+.paf-fields label{font-size:12px;font-weight:700;color:#374151;display:flex;flex-direction:column;gap:5px;}
+.paf-fields input{border:1px solid #d1d5db;border-radius:7px;padding:9px;font:14px Arial,sans-serif;min-width:0;}
+.paf-body{padding:18px 20px 20px;}
+.paf-step-label{font-size:11px;font-weight:800;letter-spacing:.08em;color:#6b7280;text-transform:uppercase;margin-bottom:9px;}
+#pafScript{font:16px/1.6 'Times New Roman',serif;white-space:pre-wrap;background:#f9fafb;border:1px solid #e5e7eb;border-radius:9px;padding:16px;margin-bottom:12px;}
+#pafInstruction{font-size:13px;line-height:1.5;color:#4b5563;margin:0 0 15px;}
+#pafButtons{display:flex;flex-wrap:wrap;gap:8px;}
+#pafButtons button{border:0;border-radius:7px;padding:10px 13px;background:#1d4ed8;color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+#pafButtons button.paf-secondary{background:#4b5563;}
+#pafButtons button.paf-end{background:#047857;}
+.paf-footer{display:flex;justify-content:space-between;gap:8px;margin-top:16px;padding-top:13px;border-top:1px solid #e5e7eb;}
+.paf-footer button{border:1px solid #d1d5db;border-radius:7px;background:#fff;padding:8px 12px;cursor:pointer;color:#111827;font-weight:700;}
+.paf-note{font-size:11px;color:#6b7280;margin-top:12px;line-height:1.45;}
+@media(max-width:560px){.paf-fields{grid-template-columns:1fr}.paf-header h2{font-size:16px}#pafScript{font-size:15px}}
+</style>
+
+
+<style id="v6-4-6-sales-panel-drag-counter">
+.sales-numbers-panel{resize:none!important;min-width:310px;max-width:310px;min-height:0!important;max-height:none!important;}
+.sales-numbers-header{cursor:move;user-select:none;touch-action:none;justify-content:space-between!important;}
+.sales-numbers-drag-hint{color:#94a3b8;font:700 12px/1 Arial,sans-serif;letter-spacing:-2px;opacity:.8;}
+.counter-value{appearance:none;-webkit-appearance:none;padding:0;font-family:inherit;cursor:pointer;}
+.counter-value:focus-visible{outline:2px solid #2563eb;outline-offset:3px;}
 </style>
 
 </head>
@@ -2832,13 +2870,16 @@
                 +
             </button>
 
-            <div
+            <button
+                type="button"
                 id="counterValue"
                 class="counter-value"
-                title="Hover to see the last counter click"
+                title="Click to subtract one call; hover to see the last counter click"
+                aria-label="Decrease call counter by one"
+                onclick="decrementCounter()"
             >
                 0
-            </div>
+            </button>
 
             <div
                 id="counterTimeTooltip"
@@ -2861,8 +2902,9 @@
         </div>
 
         <section class="sales-numbers-panel" id="salesNumbersPanel" aria-label="Sales numbers">
-            <div class="sales-numbers-header">
+            <div class="sales-numbers-header" id="salesNumbersDragHandle" title="Drag to move Sales Numbers">
                 <div class="sales-numbers-title">SALES NUMBERS</div>
+                <span class="sales-numbers-drag-hint" aria-hidden="true">⋮⋮</span>
             </div>
             <div class="sales-numbers-progress" aria-hidden="true">
                 <div class="sales-numbers-progress-fill" id="salesNumbersProgressFill"></div>
@@ -3387,998 +3429,162 @@ function getProbateInfo() {
    ============================================================ */
 
 const foreclosureFlow = {
-
-
-    /* ========================================================
-       OPENING
-       ======================================================== */
-
-    opening: {
-
-        script: () => {
-
-            const i = getForeclosureInfo();
-
-            return `Hi, ${i.firstName},`;
-
-        },
-
-
-        instruction:
-            "Pause and listen. They may say yes, how can I help you, who's this, or indicate that you have the wrong person.",
-
-
-        buttons: [
-
-            {
-                text: "Yes / How can I help?",
-                next: "confirmed"
-            },
-
-            {
-                text: "Who's this?",
-                next: "confirmed"
-            },
-
-            {
-                text: "It's not me / Wrong person",
-                next: "wrongPerson"
-            },
-
-            {
-                text: "Voicemail",
-                next: "voicemail"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       WRONG PERSON
-       ======================================================== */
-
-    wrongPerson: {
-
-        script: () => {
-
-            const i = getForeclosureInfo();
-
-            return `Oh I apologize, I'm looking for ${i.fullName}. Do you know them or do I have the wrong number?`;
-
-        },
-
-
-        instruction:
-            "Listen to whether they know the prospect or whether this is simply the wrong number.",
-
-
-        buttons: [
-
-            {
-                text: "They don't know them",
-                next: "wrongNumberEnd"
-            },
-
-            {
-                text: "They know them / Ask why we're calling",
-                next: "thirdPartyExplanation"
-            },
-
-            {
-                text: "They provide another number",
-                next: "contactProvided"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       THIRD PARTY EXPLANATION
-       ======================================================== */
-
-    thirdPartyExplanation: {
-
-        script: () => {
-
-            const i = getForeclosureInfo();
-
-            return `The reason for the call is that ${i.fullName} has a foreclosure filed on their property and we're a real estate firm that focuses on helping folks avoid foreclosure. Would you be willing to share the best contact number for ${i.fullName}?`;
-
-        },
-
-
-        instruction:
-            "If they provide the number, record it in the CRM.",
-
-
-        buttons: [
-
-            {
-                text: "They provide the number",
-                next: "contactProvided"
-            },
-
-            {
-                text: "They won't provide it",
-                next: "thirdPartyNo"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       CONTACT PROVIDED
-       ======================================================== */
-
-    contactProvided: {
-
-        script:
-            "Thank you, I really appreciate your help. Have a great day.",
-
-
-        instruction:
-            "ACTION: Record the contact information in the CRM.",
-
-
-        buttons: [
-
-            {
-                text: "End Call",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       THIRD PARTY DECLINES
-       ======================================================== */
-
-    thirdPartyNo: {
-
-        script:
-            "No problem, I completely understand. Thank you for your time.",
-
-
-        instruction:
-            "ACTION: Thank them and end the call.",
-
-
-        buttons: [
-
-            {
-                text: "End Call",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       WRONG NUMBER
-       ======================================================== */
-
-    wrongNumberEnd: {
-
-        script:
-            "I apologize for the inconvenience. Thank you for your time.",
-
-
-        instruction:
-            "ACTION: Mark the number as a wrong number in the CRM.",
-
-
-        buttons: [
-
-            {
-                text: "End Call",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       IDENTITY CONFIRMED
-       ======================================================== */
-
-    confirmed: {
-
-        script: () => {
-
-            const i = getForeclosureInfo();
-
-            return `Hey, ${i.firstName}, my name is {Caller Name} and the reason I'm reaching out today is to check on you and see if you need some help. I noticed you had a foreclosure filed on your property here recently. Do you know what your plans are?`;
-
-        },
-
-
-        instruction:
-            "LISTEN. Typically they will say they have gotten it taken care of, they were unaware of the foreclosure, or they will ask how we can help.",
-
-
-        buttons: [
-
-            {
-                text: "They have it figured out",
-                next: "figuredOut"
-            },
-
-            {
-                text: "They were unaware",
-                next: "unaware"
-            },
-
-            {
-                text: "How can you help?",
-                next: "howCanHelp"
-            },
-
-            {
-                text: "Other response",
-                next: "personalize"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       FIGURED OUT
-       ======================================================== */
-
-    figuredOut: {
-
-        script:
-            "Okay great! To be clear, were you able to get the loan caught up or did you apply for a loan modification?",
-
-
-        instruction:
-            "LISTEN for whether they caught up the loan or applied for a loan modification.",
-
-
-        buttons: [
-
-            {
-                text: "Loan caught up",
-                next: "longTerm"
-            },
-
-            {
-                text: "Loan modification",
-                next: "longTerm"
-            },
-
-            {
-                text: "We're not selling",
-                next: "notSelling"
-            },
-
-            {
-                text: "Already have a realtor",
-                next: "notSelling"
-            },
-
-            {
-                text: "Other",
-                next: "longTerm"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       NOT SELLING
-       ======================================================== */
-
-    notSelling: {
-
-        script:
-            "I'm glad to hear you got it figured out. Thank you for your time.",
-
-
-        instruction:
-            "ACTION: Thank them and hop off the call.",
-
-
-        buttons: [
-
-            {
-                text: "End Call",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       LONG TERM
-       ======================================================== */
-
-    longTerm: {
-
-        script:
-            "I'm glad to hear you got it figured out. I just have one question before I let you go. Are you still planning to keep the home long term or was the reinstatement a short-term solution?",
-
-
-        instruction:
-            "LISTEN for whether they plan to keep the home long term or are considering a move.",
-
-
-        buttons: [
-
-            {
-                text: "Keep the home long term",
-                next: "keepLongTerm"
-            },
-
-            {
-                text: "Considering a move",
-                next: "consideringMove"
-            },
-
-            {
-                text: "Not sure",
-                next: "consideringMove"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       KEEP LONG TERM
-       ======================================================== */
-
-    keepLongTerm: {
-
-        script:
-            "Got it. I'm glad you were able to get things taken care of. Thank you for your time.",
-
-
-        instruction:
-            "ACTION: Thank them and end the call.",
-
-
-        buttons: [
-
-            {
-                text: "End Call",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       CONSIDERING A MOVE
-       ======================================================== */
-
-    consideringMove: {
-
-        script:
-            "Okay that's great to know. Would it make sense to spend a few minutes on the phone with our home specialist to see what your home is worth?",
-
-
-        instruction:
-            "LISTEN for YES or NO.",
-
-
-        buttons: [
-
-            {
-                text: "YES",
-                next: "bookAppointment"
-            },
-
-            {
-                text: "NO",
-                next: "keepInContact"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       KEEP IN CONTACT
-       ======================================================== */
-
-    keepInContact: {
-
-        script:
-            "No worries, I understand you're busy. Can I send you our information when we hop off the phone and can we keep in contact for when you are ready to sell?",
-
-
-        instruction:
-            "LISTEN for YES or NO.",
-
-
-        buttons: [
-
-            {
-                text: "YES",
-                next: "sellingTimeline"
-            },
-
-            {
-                text: "NO",
-                next: "notInterested"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       SELLING TIMELINE
-       ======================================================== */
-
-    sellingTimeline: {
-
-        script:
-            "Perfect, thank you. And to confirm so we'll know how to stay in touch, when are you thinking you'll be selling?",
-
-
-        instruction:
-            "ACTION: Record the selling timeline. End the call and thank them for their time. Let them know we'll keep in touch.",
-
-
-        buttons: [
-
-            {
-                text: "Got timeline",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       UNAWARE OF FORECLOSURE
-       ======================================================== */
-
-    unaware: {
-
-        script: () => {
-
-            const i = getForeclosureInfo();
-
-            return `I'm sorry to be the one to break the bad news. I can imagine you have a lot of questions and need some time to process this. Can I make a recommendation ${i.firstName}?`;
-
-        },
-
-
-        instruction:
-            "They will almost always say yes.",
-
-
-        buttons: [
-
-            {
-                text: "YES",
-                next: "unawareRecommendation"
-            },
-
-            {
-                text: "NO",
-                next: "unawareNo"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       UNAWARE — RECOMMENDATION
-       ======================================================== */
-
-    unawareRecommendation: {
-
-        script:
-            "Most of the time when I speak to someone that didn't even know about the foreclosure, they really benefit from getting on a call with our foreclosure specialist to get their questions answered. Does getting your questions answered today make sense for you and is there a time that would work for you today?",
-
-
-        instruction:
-            "LISTEN for YES or NO.",
-
-
-        buttons: [
-
-            {
-                text: "YES",
-                next: "bookAppointment"
-            },
-
-            {
-                text: "NO",
-                next: "unawareInformation"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       UNAWARE — NO
-       ======================================================== */
-
-    unawareNo: {
-
-        script:
-            "That's perfectly fine. Would you like us to send you some additional information on the options you have to save the home from foreclosure?",
-
-
-        instruction:
-            "LISTEN for YES or NO.",
-
-
-        buttons: [
-
-            {
-                text: "YES",
-                next: "unawareKeepContact"
-            },
-
-            {
-                text: "NO",
-                next: "notInterested"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       UNAWARE — ADDITIONAL INFORMATION
-       ======================================================== */
-
-    unawareInformation: {
-
-        script:
-            "That's perfectly fine. Would you like us to send you some additional information on the options you have to save the home from foreclosure?",
-
-
-        instruction:
-            "LISTEN for YES or NO.",
-
-
-        buttons: [
-
-            {
-                text: "YES",
-                next: "unawareKeepContact"
-            },
-
-            {
-                text: "NO",
-                next: "notInterested"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       UNAWARE — KEEP CONTACT
-       ======================================================== */
-
-    unawareKeepContact: {
-
-        script:
-            "Awesome, we'll get that done today. And lastly, can we keep in contact with you as things progress in case you need us?",
-
-
-        instruction:
-            "ACTION: Wrap the call up, thank them for their time, log notes, and set tasks.",
-
-
-        buttons: [
-
-            {
-                text: "End Call",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       HOW CAN YOU HELP?
-       ======================================================== */
-
-    howCanHelp: {
-
-        script:
-            "Well, the options you have for saving the home from foreclosure are limited. You either catch the mortgage payments up or apply for a hardship or reinstatement program. If those aren't options the next best option is to plan to sell the home before the bank takes it. Our company has multiple options for selling and we're experts at navigating the foreclosure process to make sure we get the sale completed before the home is lost.",
-
-
-        instruction:
-            "LISTEN and make the next line personal to how they respond to this.",
-
-
-        buttons: [
-
-            {
-                text: "Continue",
-                next: "recommendation"
-            },
-
-            {
-                text: "They want more information",
-                next: "recommendation"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       RECOMMENDATION
-       ======================================================== */
-
-    recommendation: {
-
-        script: () => {
-
-            const i = getForeclosureInfo();
-
-            return `I understand where you're at with everything. May I make a recommendation ${i.firstName}?`;
-
-        },
-
-
-        instruction:
-            "They will almost always say yes.",
-
-
-        buttons: [
-
-            {
-                text: "YES",
-                next: "recommendationYes"
-            },
-
-            {
-                text: "NO",
-                next: "recommendationNo"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       RECOMMENDATION — YES
-       ======================================================== */
-
-    recommendationYes: {
-
-        script:
-            "Most of the time when I speak to someone that isn't sure how they want to navigate through this process, they really benefit from getting on a call with our foreclosure specialist to get their questions answered. Does getting your questions answered today make sense for you and is there a time that would work for you today?",
-
-
-        instruction:
-            "LISTEN for YES or NO.",
-
-
-        buttons: [
-
-            {
-                text: "YES",
-                next: "bookAppointment"
-            },
-
-            {
-                text: "NO",
-                next: "recommendationNo"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       RECOMMENDATION — NO
-       ======================================================== */
-
-    recommendationNo: {
-
-        script:
-            "That's perfectly fine. Would you like us to send you some additional information on the options you have to save the home from foreclosure?",
-
-
-        instruction:
-            "LISTEN for YES or NO.",
-
-
-        buttons: [
-
-            {
-                text: "YES",
-                next: "recommendationKeepContact"
-            },
-
-            {
-                text: "NO",
-                next: "notInterested"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       RECOMMENDATION — KEEP CONTACT
-       ======================================================== */
-
-    recommendationKeepContact: {
-
-        script:
-            "Awesome, we'll get that done today. And lastly, can we keep in contact with you as things progress in case you need us?",
-
-
-        instruction:
-            "ACTION: Wrap the call up, thank them for their time, log notes, set tasks, etc.",
-
-
-        buttons: [
-
-            {
-                text: "End Call",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       BOOK APPOINTMENT
-       ======================================================== */
-
-    bookAppointment: {
-
-        script:
-            "Great. Let's get a time set up for you with our specialist.",
-
-
-        instruction:
-            "ACTION: Book the time with the foreclosure/home specialist. Schedule it on the acquisitions calendar and confirm the appointment by text after hopping off the call.",
-
-
-        buttons: [
-
-            {
-                text: "Appointment Booked",
-                next: "appointmentBooked"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       APPOINTMENT BOOKED
-       ======================================================== */
-
-    appointmentBooked: {
-
-        script:
-            "Perfect, I've got you scheduled. Thank you for your time today.",
-
-
-        instruction:
-            "ACTION: Confirm the appointment by text after hopping off the call.",
-
-
-        buttons: [
-
-            {
-                text: "End Call",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       NOT INTERESTED
-       ======================================================== */
-
-    notInterested: {
-
-        script:
-            "No problem. Thank you for your time today.",
-
-
-        instruction:
-            "ACTION: Thank them and end the call. Log the appropriate disposition in the CRM.",
-
-
-        buttons: [
-
-            {
-                text: "End Call",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       OTHER / PERSONALIZE
-       ======================================================== */
-
-    personalize: {
-
-        script:
-            "I understand. Let me make sure I understand where you're at with everything.",
-
-
-        instruction:
-            "ACTION: Personalize your response based on what the prospect tells you, then continue toward the appropriate qualification path.",
-
-
-        buttons: [
-
-            {
-                text: "Continue Qualification",
-                next: "longTerm"
-            },
-
-            {
-                text: "They want specialist",
-                next: "bookAppointment"
-            },
-
-            {
-                text: "Not Interested",
-                next: "notInterested"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       VOICEMAIL
-       ======================================================== */
-
-    voicemail: {
-
-        script: () => {
-
-            const i = getForeclosureInfo();
-
-            return `Hello this is {Caller Name} with SMH Oklahoma. I'm trying to get ahold of ${i.fullName} . Could you please give me a call back when you have a moment – this is time sensitive. Thank you.`;
-
-        },
-
-
-        instruction:
-            "ACTION: Leave the voicemail, then log the call in the CRM.",
-
-
-        buttons: [
-
-            {
-                text: "Voicemail Left",
-                next: "end"
-            },
-
-            {
-                text: "No Voicemail",
-                next: "end"
-            }
-
-        ]
-
-    },
-
-
-
-    /* ========================================================
-       END CALL
-       ======================================================== */
-
-    end: {
-
-        script:
-            "CALL COMPLETE",
-
-
-        instruction:
-            "ACTION: Complete your CRM notes, disposition the call, and create any necessary follow-up tasks.",
-
-
-        buttons: [
-
-            {
-                text: "START NEW CALL",
-                next: "opening"
-            }
-
-        ]
-
-    }
-
+  opening: {
+    script: () => { const i=getForeclosureInfo(); return `Hi, ${i.firstName},\n\n(wait)\n\nHey ${i.fullName}, this is {Caller Name} with SMH Oklahoma. We noticed you had a foreclosure filing on your home here recently. I just wanted to reach out to make sure you know your options so the lender doesn't blindside you. Do you have a couple of minutes to talk?`; },
+    instruction: "Pause and listen. Choose the one response that matches what the person says.",
+    buttons:[
+      {text:"We already have a buyer",next:"hasBuyer"},
+      {text:"We already have an attorney",next:"hasAttorney"},
+      {text:"They have it figured out",next:"figuredOut"},
+      {text:"Not interested",next:"notInterested"},
+      {text:"Yes – Correct Person",next:"correctPerson"},
+      {text:"No – Wrong Person",next:"wrongPerson"},
+      {text:"Voicemail / No answer",next:"voicemail"}
+    ]
+  },
+  hasBuyer:{
+    script:"Okay gotcha. Just to be clear, you’ve already signed a contract, or have you just received an offer?",
+    instruction:"Clarify whether there is a signed contract or only an offer.",
+    buttons:[{text:"Has a contract",next:"hasContract"},{text:"Received an offer",next:"receivedOffer"}]
+  },
+  hasContract:{
+    script:"Okay I understand. Well I hope it all goes in your favor. I do want to ask, if you had an offer that made sense for you would you consider selling today?",
+    instruction:"Use the prospect's answer to determine whether to continue with qualifying questions or close.",
+    buttons:[{text:"Yes",next:"qualifying"},{text:"No",next:"contractClose"}]
+  },
+  receivedOffer:{
+    script:"Okay got it. Would you be open to receiving another offer to make sure you’re getting the best price and terms?",
+    instruction:"Follow the prospect's answer.",
+    buttons:[{text:"Yes",next:"qualifying"},{text:"No",next:"contractClose"}]
+  },
+  contractClose:{script:"Okay got it. Well I appreciate you taking my call. I hope you have a great rest of your day.",instruction:"Close the call.",buttons:[{text:"End call",next:"end"}]},
+  hasAttorney:{
+    script:"Okay gotcha. What are you guys hoping to accomplish with having an attorney?",
+    instruction:"Listen to the prospect's response and continue only if they want to discuss their situation.",
+    buttons:[{text:"Continue conversation",next:"correctPerson"},{text:"End call",next:"end"}]
+  },
+  figuredOut:{
+    script:"Okay great! To be clear, were you able to get the loan caught up or did you apply for a loan modification?",
+    instruction:"Identify whether the loan was brought current or a loan modification was submitted.",
+    buttons:[{text:"Loan Mod / Reinstatement",next:"loanStatus"},{text:"Handled / resolved",next:"handledClose"}]
+  },
+  loanStatus:{
+    script:"Okay awesome, have you already gotten the paperwork submitted?",
+    instruction:"Clarify the status of the paperwork.",
+    buttons:[{text:"Yes, we have",next:"timeline"},{text:"No, we haven’t",next:"funds"}]
+  },
+  timeline:{
+    script:"Perfect, that’s great to hear. Did they give you a timeline on when they should have an answer for you?",
+    instruction:"Listen for the timeline and whether they would like help understanding the foreclosure process.",
+    buttons:[{text:"Continue",next:"processHelp"}]
+  },
+  funds:{
+    script:"Okay awesome. So you guys have all of the funds needed to get caught up current?",
+    instruction:"Clarify whether the funds to reinstate the loan are available.",
+    buttons:[{text:"Yes",next:"fundsSource"},{text:"No",next:"sellingOption"}]
+  },
+  fundsSource:{
+    script:"Oh okay. If you don’t mind me asking, what’s the plan for coming up with it?",
+    instruction:"Listen to the answer, then continue to the selling-option question.",
+    buttons:[{text:"Continue",next:"sellingOption"}]
+  },
+  sellingOption:{
+    script:"I appreciate you sharing. Would you be open at all to hearing an offer for the home or are you dead set on catching the loan up and keeping the home?",
+    instruction:"Follow the prospect's answer.",
+    buttons:[{text:"Yes",next:"qualifying"},{text:"No",next:"politeClose"}]
+  },
+  processHelp:{
+    script:"One of the best resources I can be is understanding your timelines so it’s not a big unknown that causes stress. Would it be helpful to understand the foreclosure process a little better?",
+    instruction:"Follow the prospect's answer.",
+    buttons:[{text:"Yes",next:"processExplanation"},{text:"No",next:"politeClose"}]
+  },
+  processExplanation:{
+    script:"I would recommend getting on top of that quickly. Generally speaking you have about 90 days from the date of filing before the lender can set an auction date. I always recommend if you haven’t got a clear plan in place to save the home, to begin looking at sales options around week 6 so that you don’t find yourself in a worse position, losing all of your equity. Would it be okay if I keep in touch with you as things progress to make sure you get all of this handled?",
+    instruction:"Ask permission to keep in touch.",
+    buttons:[{text:"Yes",next:"keepInTouch"},{text:"No",next:"politeClose"}]
+  },
+  notInterested:{
+    script:"I’m sorry, you’re not interested in what exactly? I haven’t told you why I called.",
+    instruction:"Respect the prospect's answer. If they are willing to continue, return to the qualifying conversation.",
+    buttons:[{text:"Willing to talk",next:"correctPerson"},{text:"Still not interested",next:"politeClose"}]
+  },
+  correctPerson:{
+    script:"Most people I talk to in this position are either trying to work out a loan modification, looking at the cost of reinstatement, or considering a sale before a sale date gets closer. If you don’t mind sharing, where are you at with everything right now?",
+    instruction:"Choose the response that best matches the prospect's situation.",
+    buttons:[
+      {text:"It’s not your business",next:"noneBusiness"},
+      {text:"Working on a loan modification",next:"loanModification"},
+      {text:"Looking to get it reinstated",next:"reinstatement"},
+      {text:"Looking at selling / may consider selling",next:"sellingOption"}
+    ]
+  },
+  noneBusiness:{
+    script:"I completely understand not wanting to talk to a stranger over the phone about this but honestly I may be the best person to talk to. I understand being in this spot can be stressful and may even feel embarrassing, I’m not here to judge, we don’t even know each other right? I just want to see if we can help at all.",
+    instruction:"If the prospect continues, return to the qualifying question. If not, close politely.",
+    buttons:[{text:"Continue",next:"correctPerson"},{text:"End call",next:"politeClose"}]
+  },
+  loanModification:{
+    script:"Okay awesome, have you already gotten the paperwork submitted?",
+    instruction:"Follow the prospect's answer.",
+    buttons:[{text:"Yes, we have",next:"timeline"},{text:"No, we haven’t",next:"loanModNotSubmitted"}]
+  },
+  loanModNotSubmitted:{
+    script:"Okay, understood. Would it be okay if I kept in touch to make sure this all gets squared away?",
+    instruction:"Ask permission to follow up.",
+    buttons:[{text:"Yes",next:"keepInTouch"},{text:"No",next:"politeClose"}]
+  },
+  reinstatement:{
+    script:"Okay awesome. So you guys have all of the funds needed to get caught up current?",
+    instruction:"Follow the prospect's answer.",
+    buttons:[{text:"Yes",next:"fundsSource"},{text:"No",next:"sellingOption"}]
+  },
+  keepInTouch:{
+    script:"Okay, understood. Would it be okay if I kept in touch to make sure this all gets squared away?",
+    instruction:"Record permission and the agreed follow-up details.",
+    buttons:[{text:"Yes",next:"qualifyingQuestions"},{text:"No",next:"politeClose"}]
+  },
+  qualifying:{
+    script:"Qualifying Questions",
+    instruction:"Continue with the qualifying questions shown in the flowchart.",
+    buttons:[{text:"Set Appointment / Handoff",next:"handoff"}]
+  },
+  qualifyingQuestions:{
+    script:"Qualifying Questions",
+    instruction:"Continue with the qualifying questions shown in the flowchart.",
+    buttons:[{text:"Set Appointment / Handoff",next:"handoff"}]
+  },
+  handoff:{
+    script:"Set Appointment / Handoff",
+    instruction:"Complete the appointment handoff.",
+    buttons:[{text:"End call",next:"end"}]
+  },
+  wrongPerson:{
+    script:()=>{const i=getForeclosureInfo();return `Oh I apologize, I’m looking for ${i.fullName}. Do you know them or do I have the wrong number?`;},
+    instruction:"Determine whether the person knows the prospect.",
+    buttons:[{text:"Yes, I know them",next:"knowsProspect"},{text:"Wrong Number / Don’t know them",next:"wrongNumberClose"}]
+  },
+  knowsProspect:{
+    script:"Are you also a good person to discuss details regarding the foreclosure on [property address]?",
+    instruction:"If yes, ask whether they can share the prospect's number. If no, thank them and end the call.",
+    buttons:[{text:"Yes",next:"requestNumber"},{text:"No",next:"thirdPartyClose"}]
+  },
+  requestNumber:{
+    script:"Okay, no problem. My company assist families who are facing foreclosure. We would like to speak with [prospect] to see if they need some help. Would you be willing to share their number so that we can reach them directly quicker before they’re out of time?",
+    instruction:"Ask for the prospect's contact number.",
+    buttons:[{text:"Yes",next:"numberProvided"},{text:"No",next:"thirdPartyClose"}]
+  },
+  numberProvided:{script:"Thank you for your time. I hope you have a great day!",instruction:"Record the provided contact number.",buttons:[{text:"End call",next:"end"}]},
+  wrongNumberClose:{script:"I apologize for the inconvenience. Thank you for your time.",instruction:"Close the call.",buttons:[{text:"End call",next:"end"}]},
+  thirdPartyClose:{script:"I apologize for the inconvenience. Thank you for your time.",instruction:"Close the call.",buttons:[{text:"End call",next:"end"}]},
+  voicemail:{
+    script:()=>{const i=getForeclosureInfo();return `Hello this is {Caller Name} with SMH Oklahoma. I'm trying to get ahold of ${i.fullName}. Could you please give me a call back when you have a moment – this is time sensitive. Thank you.`;},
+    instruction:"Leave the voicemail message, then end the call.",
+    buttons:[{text:"End call",next:"end"}]
+  },
+  handledClose:{script:"Okay great, I’m glad you got it handled. Have a great day!",instruction:"Close the call.",buttons:[{text:"End call",next:"end"}]},
+  politeClose:{script:"Okay, no worries. Well I appreciate your time today. Thanks for chatting with me. I hope you have a great day!",instruction:"Close the call.",buttons:[{text:"End call",next:"end"}]},
+  end:{script:"Call ended.",instruction:"Update the CRM disposition as appropriate.",buttons:[]}
 };
-
-
-/* ============================================================
-   PROBATE FLOW
-   ============================================================ */
-
 const probateFlow = {
 
     opening: {
@@ -5010,13 +4216,13 @@ function getPhilippineHour(dateValue) {
 
 function isCallShiftActive(dateValue) {
     const hour = getPhilippineHour(dateValue);
-    return hour >= 22 || hour < 6;
+    return hour >= 22 || hour < 8;
 }
 
 function getShiftDateKey(dateValue) {
     const date = dateValue instanceof Date ? new Date(dateValue.getTime()) : new Date(dateValue || Date.now());
     const hour = getPhilippineHour(date);
-    if (hour < 6) date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
+    if (hour < 8) date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
     return getPhilippineDateKey(date);
 }
 
@@ -5743,25 +4949,29 @@ function incrementCounter() {
 }
 
 
-function clearCounter() {
-
-    clickCount = 0;
+function decrementCounter() {
+    if (clickCount <= 0) return;
+    clickCount = Math.max(0, clickCount - 1);
     counterWarningTriggered = false;
-
-    localStorage.setItem(
-        "smhCallCount",
-        clickCount
-    );
-
-    lastCounterClickTime = null;
-
-    localStorage.removeItem(
-        "smhLastCounterClick"
-    );
-
+    localStorage.setItem("smhCallCount", clickCount);
+    if (clickCount === 0) {
+        lastCounterClickTime = null;
+        localStorage.removeItem("smhLastCounterClick");
+    }
     updateCounterDisplay();
     updateCounterTimeTooltip();
+}
 
+function clearCounter() {
+    const confirmed = window.confirm("Clear the call counter? This will reset the current count to 0.");
+    if (!confirmed) return;
+    clickCount = 0;
+    counterWarningTriggered = false;
+    localStorage.setItem("smhCallCount", clickCount);
+    lastCounterClickTime = null;
+    localStorage.removeItem("smhLastCounterClick");
+    updateCounterDisplay();
+    updateCounterTimeTooltip();
 }
 
 
@@ -6237,6 +5447,13 @@ function toggleSpanishText() {
 /* V6.5 — Searchable knowledge base. Answers below are seeded from the supplied FigJam board and the existing FAQ; keep company/legal wording approved before expanding. */
 const smhKnowledgeBaseEntries = [
   {
+    "category": "Probate Call Flows",
+    "title": "Probate Attorney Call Flow",
+    "keywords": "probate attorney lawyer estate counsel law firm executor personal representative heir beneficiary represent representative probate call flow",
+    "answer": "Interactive attorney call flow: confirm whether the attorney is listed for the petitioner, ask whether the person they represent plans to sell the property, then ask about timing and the appropriate next step. Do not assume representation or request confidential details.",
+    "callFlow": "probateAttorney"
+  },
+  {
     "category": "What We Do",
     "title": "What We Do",
     "keywords": "what we do company real estate investment licensed real estate firm buy properties market",
@@ -6320,15 +5537,17 @@ const smhKnowledgeBaseEntries = [
     "keywords": "i've been served foreclosure papers. how much time do i have?",
     "answer": "\"If you've already been served with there's typically a 20-day deadline to respond. That doesn't mean your house will be sold in 20 days, but it is an important legal deadline. I'd recommend speaking with your lender promptly so you don't miss your opportunity to respond.\"",
     "followUps": [
-      "Do you remember when you received the court paperwork, and have you spoken with an attorney?",
-      "Have you actually received foreclosure paperwork from the court, or are you still receiving notices from your mortgage company?"
+      "Do you remember when you received the court paperwork, and have you spoken with an attorney?"
     ]
   },
   {
     "category": "Foreclosure & Mortgage",
     "title": "What happens at a sheriff's sale?",
     "keywords": "what happens at a sheriff's sale?",
-    "answer": "\"A sheriff's sale is a public auction where the property is sold through the foreclosure process. In Oklahoma judicial foreclosures, the court generally must approve the sale afterward at what's called a confirmation hearing. That's a major deadline because your options become much more limited.\""
+    "answer": "\"A sheriff's sale is a public auction where the property is sold through the foreclosure process. In Oklahoma judicial foreclosures, the court generally must approve the sale afterward at what's called a confirmation hearing. That's a major deadline because your options become much more limited.\"",
+    "followUps": [
+      "Have you received an actual sheriff's sale date yet?"
+    ]
   },
   {
     "category": "Foreclosure & Mortgage",
@@ -6336,7 +5555,6 @@ const smhKnowledgeBaseEntries = [
     "keywords": "can i stop foreclosure even if my auction is scheduled?",
     "answer": "\"Potentially, yes. Depending on your circumstances, options could include paying off the mortgage, reaching an agreement with the lender, qualifying for a loss-mitigation program, selling the home before the auction, or pursuing bankruptcy protection. The closer the sale gets, the fewer practical options you may have, so timing is important.\"",
     "followUps": [
-      "Have you received an actual sheriff's sale date yet?",
       "How far away is your scheduled sale?"
     ]
   },
@@ -6362,7 +5580,10 @@ const smhKnowledgeBaseEntries = [
     "category": "Foreclosure & Mortgage",
     "title": "How long does a foreclosure take in Oklahoma?",
     "keywords": "how long does a foreclosure take in oklahoma?",
-    "answer": "\"It varies quite a bit. Usually, a mortgage company cannot start the legal foreclosure process until the loan is more than 120 days behind. After that, the timeline depends on the court, the lender, and whether the homeowner is working toward a resolution. There isn't one guaranteed timeline for every foreclosure but generally speaking the process takes roughly 3-4 months to get to an auction sale.\""
+    "answer": "\"It varies quite a bit. Usually, a mortgage company cannot start the legal foreclosure process until the loan is more than 120 days behind. After that, the timeline depends on the court, the lender, and whether the homeowner is working toward a resolution. There isn't one guaranteed timeline for every foreclosure but generally speaking the process takes roughly 3-4 months to get to an auction sale.\"",
+    "followUps": [
+      "Have you actually received foreclosure paperwork from the court, or are you still receiving notices from your mortgage company?"
+    ]
   },
   {
     "category": "Foreclosure & Mortgage",
@@ -6377,17 +5598,16 @@ const smhKnowledgeBaseEntries = [
     "category": "Foreclosure & Mortgage",
     "title": "Is my home automatically lost when the foreclosure is filed?",
     "keywords": "is my home automatically lost when the foreclosure is filed?",
-    "answer": "\"No. Filing a foreclosure lawsuit doesn't automatically transfer ownership of your home to the bank. There can still be opportunities to bring the loan current, work out an agreement with the lender, sell the property, or explore legal options.\""
+    "answer": "\"No. Filing a foreclosure lawsuit doesn't automatically transfer ownership of your home to the bank. There can still be opportunities to bring the loan current, work out an agreement with the lender, sell the property, or explore legal options.\"",
+    "followUps": [
+      "Ideally, are you hoping to keep the home, or have you been considering selling it?"
+    ]
   },
   {
     "category": "Foreclosure & Mortgage",
     "title": "Will the mortgage company accept a payment plan for what I'm behind?",
     "keywords": "will the mortgage company accept a payment plan for what i'm behind?",
-    "answer": "\"Sometimes. It's called a repayment plan. Instead of paying everything you're behind all at once, the mortgage company may allow you to spread those missed payments over a period of time while continuing your regular mortgage payments. Whether they'll approve one depends on your loan and financial situation.\"",
-    "followUps": [
-      "Is your main difficulty catching up on the payments you missed, or is the regular monthly payment itself no longer affordable?",
-      "Would you be able to comfortably afford your normal mortgage payment if you had more time to catch up on the past-due amount?"
-    ]
+    "answer": "\"Sometimes. It's called a repayment plan. Instead of paying everything you're behind all at once, the mortgage company may allow you to spread those missed payments over a period of time while continuing your regular mortgage payments. Whether they'll approve one depends on your loan and financial situation.\""
   },
   {
     "category": "Foreclosure & Mortgage",
@@ -6401,7 +5621,7 @@ const smhKnowledgeBaseEntries = [
     "keywords": "how do i qualify for a loan modification?",
     "answer": "\"The lender will generally review your income, expenses, the reason you fell behind, and whether you can afford payments going forward. Usually, you'll submit a hardship or loss- mitigation application with supporting financial documents. Approval isn't guaranteed, but it can be worth exploring if you want to keep the property.\"",
     "followUps": [
-      "Is the situation that caused you to fall behind temporary, or do you think the mortgage payment will be difficult to afford long term?"
+      "Have you already applied for a modification, or is that something you haven't looked into yet?"
     ]
   },
   {
@@ -6414,7 +5634,8 @@ const smhKnowledgeBaseEntries = [
     ],
     "trainingNotes": [
       "This is an important distinction. An application alone does not automatically stop foreclosure. The general federal rule provides stronger protections for timely, complete applications, and there are exceptions depending on the loan and servicer. https://www.consumerfinance.gov/rules-policy/regulations/1024/41/"
-    ]
+    ],
+    "noteLabel": "TRAINING NOTE"
   },
   {
     "category": "Foreclosure & Mortgage",
@@ -6435,7 +5656,8 @@ const smhKnowledgeBaseEntries = [
     ],
     "trainingNotes": [
       "Under the general CFPB rule, certain borrowers whose complete applications were received at least 90 days before a scheduled foreclosure sale have a right to appeal a loan modification denial. https://www.consumerfinance.gov/ask-cfpb/what-happens-after-i-complete-an-application-to-determine-my-options-to-avoid-foreclosure-en-1851/"
-    ]
+    ],
+    "noteLabel": "TRAINING NOTE"
   },
   {
     "category": "Foreclosure & Mortgage",
@@ -6452,11 +5674,12 @@ const smhKnowledgeBaseEntries = [
     "keywords": "can the bank move my missed payments to the end of the loan?",
     "answer": "\"Sometimes. Depending on the type of loan and the lender's programs, there may be a payment deferral or partial-claim option. Those can allow certain missed payments to be paid later rather than immediately. The mortgage company would need to determine whether you're eligible.\"",
     "followUps": [
-      "Are you primarily trying to get caught up on the mortgage, or are there other debts affecting your financial situation?"
+      "Is your main difficulty catching up on the payments you missed, or is the regular monthly payment itself no longer affordable?"
     ],
     "trainingNotes": [
       "A partial claim can create an additional lien payable when the property is sold or refinanced. Do not assume the first mortgage balance represents the entire payoff amount. https://www.consumerfinance.gov/housing/housing-insecurity/help-for-homeowners/exit-your-forbearance-carefully/"
-    ]
+    ],
+    "noteLabel": "ACQUISITIONS NOTE"
   },
   {
     "category": "Foreclosure & Mortgage",
@@ -6471,10 +5694,7 @@ const smhKnowledgeBaseEntries = [
     "category": "Foreclosure & Mortgage",
     "title": "What's the difference between Chapter 7 and Chapter 13 bankruptcy?",
     "keywords": "what's the difference between chapter 7 and chapter 13 bankruptcy?",
-    "answer": "\"Chapter 7 is generally used to discharge qualifying debts. It can temporarily delay foreclosure, but it usually doesn't provide a long- term way to catch up on mortgage payments. Chapter 13 is different. It allows eligible homeowners with regular income to enter a court- supervised repayment plan, usually lasting three to five years. That can give them an opportunity to catch up on missed mortgage payments while keeping the home, provided they can continue making the required payments.\"",
-    "followUps": [
-      "Would you be able to comfortably afford your normal mortgage payment if you had more time to catch up on the past-due amount?"
-    ]
+    "answer": "\"Chapter 7 is generally used to discharge qualifying debts. It can temporarily delay foreclosure, but it usually doesn't provide a long- term way to catch up on mortgage payments. Chapter 13 is different. It allows eligible homeowners with regular income to enter a court- supervised repayment plan, usually lasting three to five years. That can give them an opportunity to catch up on missed mortgage payments while keeping the home, provided they can continue making the required payments.\""
   },
   {
     "category": "Foreclosure & Mortgage",
@@ -6498,11 +5718,7 @@ const smhKnowledgeBaseEntries = [
     "category": "Foreclosure & Mortgage",
     "title": "Can I sell my home if it's already in foreclosure?",
     "keywords": "can i sell my home if it's already in foreclosure?",
-    "answer": "\"Yes, in many cases you can still sell the property before the foreclosure is completed. If the sale proceeds are enough to pay off the mortgage and the other required expenses, you can sell the home and keep whatever equity remains. The important thing is having enough time to complete the transaction before the foreclosure sale.\"",
-    "followUps": [
-      "Ideally, are you hoping to keep the home, or have you been considering selling it?",
-      "If selling made sense, how quickly would you want to have everything completed?"
-    ]
+    "answer": "\"Yes, in many cases you can still sell the property before the foreclosure is completed. If the sale proceeds are enough to pay off the mortgage and the other required expenses, you can sell the home and keep whatever equity remains. The important thing is having enough time to complete the transaction before the foreclosure sale.\""
   },
   {
     "category": "Foreclosure & Mortgage",
@@ -6510,9 +5726,7 @@ const smhKnowledgeBaseEntries = [
     "keywords": "what happens to my equity if the house is foreclosed on?",
     "answer": "\"Foreclosure doesn't automatically mean you lose every dollar of equity. If a foreclosure sale generates money beyond the amounts owed to the lender, other creditors, and applicable costs, there may be surplus funds available to the parties legally entitled to them. But you have less control over the sale price at auction than you would through a normal sale, they usually sale so cheap that you will lose all of your equity.\"",
     "followUps": [
-      "Do you have a general idea of your remaining mortgage balance and what you think the property is worth?",
-      "Are you most concerned about keeping the property, preserving your equity, or avoiding a completed foreclosure?",
-      "Are there other mortgages or liens on the home besides your primary mortgage?"
+      "Do you have a general idea of your remaining mortgage balance and what you think the property is worth?"
     ]
   },
   {
@@ -6521,7 +5735,7 @@ const smhKnowledgeBaseEntries = [
     "keywords": "what if i owe more than my house is worth?",
     "answer": "\"In that situation, one possibility is a short sale. That's when the lender agrees to allow the property to sell for less than the amount owed. It's not guaranteed and requires lender approval. You would also want to understand whether the lender will forgive any remaining balance.\"",
     "followUps": [
-      "Do you think the property is worth more or less than your total mortgage payoff?"
+      "Have you talked with the mortgage company about a short sale, or gotten an estimate of what the property is worth?"
     ]
   },
   {
@@ -6530,24 +5744,23 @@ const smhKnowledgeBaseEntries = [
     "keywords": "what is a short sale?",
     "answer": "\"A short sale is when the mortgage lender approves a sale even though the proceeds won't fully pay off the loan. The lender reviews the purchase offer and the homeowner's financial circumstances before deciding whether to approve it. It's a way some homeowners can sell when they owe more than the property is worth.\"",
     "followUps": [
-      "Have you talked with the mortgage company about a short sale, or gotten an estimate of what the property is worth?"
+      "Do you think the property is worth more or less than your total mortgage payoff?"
     ]
   },
   {
     "category": "Foreclosure & Mortgage",
     "title": "If I sell during foreclosure, will it affect my credit?",
     "keywords": "if i sell during foreclosure, will it affect my credit?",
-    "answer": "\"Missed mortgage payments and foreclosure proceedings can already affect your credit. Generally, an ordinary sale that fully pays off the mortgage avoids a completed foreclosure and may put you in a better position than letting the home go to auction. A short sale is different, and the credit impact depends on how it's reported.\""
+    "answer": "\"Missed mortgage payments and foreclosure proceedings can already affect your credit. Generally, an ordinary sale that fully pays off the mortgage avoids a completed foreclosure and may put you in a better position than letting the home go to auction. A short sale is different, and the credit impact depends on how it's reported.\"",
+    "followUps": [
+      "Are you most concerned about keeping the property, preserving your equity, or avoiding a completed foreclosure?"
+    ]
   },
   {
     "category": "Foreclosure & Mortgage",
     "title": "What if I accept an offer but the lender has already scheduled the auction?",
     "keywords": "what if i accept an offer but the lender has already scheduled the auction?",
-    "answer": "\"Having a buyer under contract doesn't automatically stop a foreclosure sale. Sometimes the lender will consider postponing the auction if there's a legitimate sale in progress, but it must be approved. Until that happens, you should treat the auction date as active.\"",
-    "followUps": [
-      "Have you received an actual sheriff's sale date yet?",
-      "How far away is your scheduled sale?"
-    ]
+    "answer": "\"Having a buyer under contract doesn't automatically stop a foreclosure sale. Sometimes the lender will consider postponing the auction if there's a legitimate sale in progress, but it must be approved. Until that happens, you should treat the auction date as active.\""
   },
   {
     "category": "Foreclosure & Mortgage",
@@ -6564,10 +5777,7 @@ const smhKnowledgeBaseEntries = [
     "keywords": "will i owe money after the foreclosure sale?",
     "answer": "\"Possibly. If the foreclosure doesn't satisfy the full debt, the lender may be able to pursue what is called a deficiency judgment. Oklahoma has specific rules and deadlines about when that can happen. It's something an attorney can evaluate based on your mortgage and the foreclosure process being used.\"",
     "followUps": [
-      "Do you remember when you received the court paperwork, and have you spoken with an attorney?",
-      "Have you received an actual sheriff's sale date yet?",
-      "How far away is your scheduled sale?",
-      "Has the property already been auctioned, or is the sale still upcoming?"
+      "Are there other mortgages or liens on the home besides your primary mortgage?"
     ]
   }
 ];
@@ -6608,13 +5818,13 @@ function renderKnowledgeBaseResults() {
    }
    if (Array.isArray(entry.trainingNotes) && entry.trainingNotes.length) {
      const notes = document.createElement("div"); notes.className = "kb-training-notes";
-     const notesHeading = document.createElement("div"); notesHeading.className = "kb-training-notes-heading"; notesHeading.textContent = "TRAINING NOTE"; notes.appendChild(notesHeading);
+     const notesHeading = document.createElement("div"); notesHeading.className = "kb-training-notes-heading"; notesHeading.textContent = entry.noteLabel || "TRAINING NOTE"; notes.appendChild(notesHeading);
      entry.trainingNotes.forEach((note) => {
        const noteText = document.createElement("div"); noteText.className = "kb-training-note"; noteText.textContent = note; notes.appendChild(noteText);
      });
      answer.appendChild(notes);
    }
-   title.addEventListener("click", () => { const open = !card.classList.contains("open"); results.querySelectorAll(".kb-result.open").forEach(other => { other.classList.remove("open"); const otherButton = other.querySelector(".kb-result-title"); if (otherButton) otherButton.setAttribute("aria-expanded", "false"); }); card.classList.toggle("open", open); title.setAttribute("aria-expanded", String(open)); });
+   title.addEventListener("click", () => { if (entry.callFlow === "probateAttorney") { openProbateAttorneyCallFlow(); return; } const open = !card.classList.contains("open"); results.querySelectorAll(".kb-result.open").forEach(other => { other.classList.remove("open"); const otherButton = other.querySelector(".kb-result-title"); if (otherButton) otherButton.setAttribute("aria-expanded", "false"); }); card.classList.toggle("open", open); title.setAttribute("aria-expanded", String(open)); });
    card.appendChild(title); card.appendChild(answer); results.appendChild(card);
  });
 }
@@ -7712,7 +6922,10 @@ updateCallStatsDisplay();
   <section class="kb-reader-modal" role="document">
     <header class="kb-reader-top">
       <div><h2 id="kbReaderTitle" class="kb-reader-heading"></h2><div id="kbReaderCategory" class="kb-reader-category"></div></div>
-      <button type="button" id="kbReaderClose" class="kb-reader-close" aria-label="Close article reader" title="Close">×</button>
+      <div class="kb-reader-actions">
+        <button type="button" id="kbReaderCopy" class="kb-reader-copy" aria-label="Copy article text">Copy Text</button>
+        <button type="button" id="kbReaderClose" class="kb-reader-close" aria-label="Close article reader" title="Close">×</button>
+      </div>
     </header>
     <div id="kbReaderContent" class="kb-reader-content"></div>
   </section>
@@ -7724,7 +6937,38 @@ updateCallStatsDisplay();
   const categoryNode=document.getElementById('kbReaderCategory');
   const contentNode=document.getElementById('kbReaderContent');
   const closeButton=document.getElementById('kbReaderClose');
+  const copyButton=document.getElementById('kbReaderCopy');
   let previousFocus=null;
+  let articleAutoCloseTimer=null;
+  const ARTICLE_AUTO_CLOSE_MS=10*60*1000;
+  function resetArticleAutoClose(){
+    if(articleAutoCloseTimer) window.clearTimeout(articleAutoCloseTimer);
+    articleAutoCloseTimer=window.setTimeout(closeReader,ARTICLE_AUTO_CLOSE_MS);
+  }
+  async function copyArticleText(){
+    const text=(contentNode.innerText||contentNode.textContent||'').trim();
+    if(!text) return;
+    const original=copyButton.textContent;
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(text);
+      }else{
+        const field=document.createElement('textarea');
+        field.value=text;field.setAttribute('readonly','');
+        field.style.position='fixed';field.style.left='-9999px';field.style.top='0';
+        document.body.appendChild(field);field.select();
+        const copied=document.execCommand('copy');field.remove();
+        if(!copied) throw new Error('Clipboard copy failed');
+      }
+      copyButton.textContent='Copied!';
+      copyButton.setAttribute('aria-label','Article text copied to clipboard');
+    }catch(error){
+      copyButton.textContent='Copy failed';
+      copyButton.setAttribute('aria-label','Could not copy article text');
+    }
+    window.setTimeout(()=>{copyButton.textContent=original;copyButton.setAttribute('aria-label','Copy article text');},1600);
+  }
+  copyButton.addEventListener('click',copyArticleText);
   function openReader(card){
     if(!card) return;
     const title=card.querySelector('.kb-result-title');
@@ -7737,10 +6981,13 @@ updateCallStatsDisplay();
     contentNode.replaceChildren(answer.cloneNode(true));
     overlay.classList.add('is-visible');
     overlay.setAttribute('aria-hidden','false');
+    resetArticleAutoClose();
     document.documentElement.style.overflow='hidden';
     closeButton.focus();
   }
   function closeReader(){
+    if(articleAutoCloseTimer) window.clearTimeout(articleAutoCloseTimer);
+    articleAutoCloseTimer=null;
     if(!overlay.classList.contains('is-visible')) return;
     overlay.classList.remove('is-visible');
     overlay.setAttribute('aria-hidden','true');
@@ -7758,5 +7005,161 @@ updateCallStatsDisplay();
 })();
 </script>
 
+
+<div id="probateAttorneyFlowOverlay" role="dialog" aria-modal="true" aria-labelledby="pafTitle" aria-hidden="true">
+  <section id="probateAttorneyFlowModal">
+    <header class="paf-header"><h2 id="pafTitle">Probate Attorney Call Flow</h2><button type="button" class="paf-close" id="pafClose" aria-label="Close call flow">×</button></header>
+    <div class="paf-fields">
+      <label>Caller Name<input id="pafCallerName" placeholder="{Caller Name}"></label>
+      <label>Attorney Name (if known)<input id="pafAttorneyName" placeholder="Counsel / Attorney"></label>
+      <label>Deceased / Estate Name<input id="pafEstateName" placeholder="{Deceased / Estate Name}"></label>
+      <label>Person of Interest (if known)<input id="pafPersonName" placeholder="{Heir / Beneficiary Name}"></label>
+    </div>
+    <div class="paf-body">
+      <div class="paf-step-label" id="pafStepLabel">Opening</div>
+      <div id="pafScript">Hello, this is {Caller Name} with SMH Oklahoma…</div>
+      <p id="pafInstruction"></p>
+      <div id="pafButtons"></div>
+      <div class="paf-footer"><button type="button" id="pafBack">← Back</button><button type="button" id="pafRestart">Restart Flow</button></div>
+      <div class="paf-note">Use the attorney’s confirmed role to choose the branch. Do not ask for or disclose confidential details; follow company policy and respect any request not to be contacted.</div>
+    </div>
+  </section>
+</div>
+<script id="probate-attorney-flow-script">
+(function(){
+  const overlay=document.getElementById('probateAttorneyFlowOverlay');
+  const scriptNode=document.getElementById('pafScript');
+  const instructionNode=document.getElementById('pafInstruction');
+  const buttonsNode=document.getElementById('pafButtons');
+  const stepLabel=document.getElementById('pafStepLabel');
+  const closeButton=document.getElementById('pafClose');
+  let current='opening'; let history=[]; let priorFocus=null;
+  const val=(id,fallback)=>{const el=document.getElementById(id);return el&&el.value.trim()?el.value.trim():fallback;};
+  const info=()=>({caller:val('pafCallerName','{Caller Name}'),attorney:val('pafAttorneyName','Counsel'),estate:val('pafEstateName','{Deceased / Estate Name}'),person:val('pafPersonName','{Heir / Beneficiary Name}')});
+  const flow={
+    opening:{label:'Confirm Attorney for Petitioner',script:()=>{const i=info();return `Hello, this is ${i.caller} with SMH Oklahoma. I’m calling about a property connected with the estate of ${i.estate}. Our records list you as the attorney for the petitioner. Is that correct?`;},instruction:'Start by confirming the record. If they are not the attorney for the petitioner, ask who the appropriate contact is. Do not assume they represent an heir or beneficiary.',buttons:[['Yes — That’s Correct','askSelling'],['No — Different Role','roleClarify'],['Someone Else Handles It','referral'],['Wrong Office / Wrong Person','wrongOffice'],['Voicemail / No Answer','voicemail'],['Not Interested / Do Not Contact','notInterested']]},
+    askSelling:{label:'Ask About Selling Plans',script:'Thank you. We’re reaching out because we’re interested in making an offer on the property. Do you know whether the person you represent is planning to sell it?',instruction:'Keep the question focused on the property and their client’s stated plans. Do not ask for privileged or confidential details. If the attorney cannot speak for the client, accept that and ask about an appropriate next step.',buttons:[['Yes — They’re Considering Selling','timeline'],['No — Not Planning to Sell','notSelling'],['Not Sure / Need to Ask Client','confirmWithClient'],['I Don’t Represent the Interested Person','roleClarify'],['Not Appropriate to Discuss','confidential']]},
+    timeline:{label:'Ask About Timing',script:'Understood. Have they mentioned a plan or timeline for considering offers, or would there be an appropriate time for us to follow up through the proper contact?',instruction:'Ask only for a general timeline or approved next step. Do not pressure the attorney to disclose confidential client communications.',buttons:[['Has a Timeline / Accepting Offers','nextStep'],['No Timeline Yet','noTimeline'],['Attorney Wants Us to Contact Client','contactProvided'],['Needs to Confirm First','confirmWithClient'],['Cannot Discuss','confidential']]},
+    nextStep:{label:'Agree on Next Step',script:'Thank you, that’s helpful. What would be the appropriate next step for us to discuss a potential offer — should we follow up with your office, or is there another contact or process you prefer?',instruction:'Follow the attorney’s stated process. Record only business contact details and the next step they authorize.',buttons:[['Follow Up Through This Office','contactProvided'],['Another Contact / Process','referral'],['Send General Information','sendInfo'],['No Further Action','end']]},
+    notSelling:{label:'Not Planning to Sell',script:'Understood. I appreciate you clarifying that. Would you prefer that we close this out for now, or is there an appropriate time to check back if the client’s plans change?',instruction:'Respect their answer and any request not to be contacted. Do not imply an obligation to sell.',buttons:[['Close It Out','end'],['They Gave an Appropriate Follow-Up Time','contactProvided'],['Do Not Contact','notInterested']]},
+    noTimeline:{label:'No Timeline Yet',script:'No problem. Would it be appropriate for us to check back at a later time, or would you prefer that we wait until your office or the client is ready to discuss the property?',instruction:'Only schedule a follow-up if they indicate it is appropriate. Follow company contact and suppression rules.',buttons:[['Follow Up Is Appropriate','contactProvided'],['Wait for Them to Reach Out','end'],['Do Not Contact','notInterested']]},
+    confirmWithClient:{label:'Attorney Needs to Confirm',script:'Of course. We understand you may need to check with your client first. What would be the appropriate next step — should we follow up with your office at a later time, or wait to hear from you?',instruction:'Do not ask the attorney to reveal private client communications. Record a follow-up only if they authorize or invite it.',buttons:[['Follow Up Approved','contactProvided'],['Wait for Attorney to Respond','end'],['No Follow-Up / Declines','end']]},
+    roleClarify:{label:'Clarify Attorney’s Role',script:'Thank you for clarifying. Just so I update our records correctly, are you the attorney for the petitioner, counsel for the estate or personal representative, or representing an individual heir or beneficiary?',instruction:'Use the role they confirm. These roles are not interchangeable; do not assume the attorney represents the person who may benefit from the estate.',buttons:[['Attorney for Petitioner','askSelling'],['Represents Estate / Personal Representative','askSelling'],['Represents Heir / Beneficiary','askSelling'],['Refer Me to Correct Contact','referral'],['Cannot Confirm / Cannot Discuss','confidential']]},
+    contactProvided:{label:'Next Step / Follow-Up',script:'Thank you, I appreciate your guidance. We’ll follow the process you’ve indicated and keep the conversation focused on the property and any authorized next step.',instruction:'Record the agreed next step, the attorney’s confirmed role, and any permitted follow-up timing in the CRM. Avoid privileged or unnecessary personal details.',buttons:[['Call Complete','end']]},
+    sendInfo:{label:'Send General Information',script:'Certainly. What is the appropriate business email address or process for sending general information about our company and a potential property offer? We won’t include confidential estate details.',instruction:'Use only a contact method the attorney authorizes for this purpose and follow company policy.',buttons:[['Contact Method Provided','contactProvided'],['Declines / No Contact Details','end']]},
+    referral:{label:'Referral to Correct Contact',script:'Thank you. Could you point me to the appropriate attorney or office contact for a general property inquiry? If you’re unable to share that, no problem.',instruction:'Accept a referral or a refusal gracefully. Do not ask them to disclose client-confidential information.',buttons:[['Referral Provided','contactProvided'],['No Referral Available','end']]},
+    wrongOffice:{label:'Wrong Office / Person',script:'I apologize for the interruption. Thank you for letting me know. I’ll update our records so we can avoid contacting the wrong office.',instruction:'Update the disposition and end politely.',buttons:[['End Call','end']]},
+    confidential:{label:'Confidentiality Boundary',script:'Of course. I understand, and I don’t want you to share anything confidential or privileged. Thank you for clarifying. I’ll leave it there.',instruction:'Respect the boundary immediately. Do not probe for confidential, privileged, or nonpublic case information.',buttons:[['End Call','end']]},
+    notInterested:{label:'Not Interested / Do Not Contact',script:'Understood. I appreciate your time, and I’ll end the call here. I’ll respect your request.',instruction:'Respect the refusal and any request not to be contacted; follow company suppression procedures.',buttons:[['End Call','end']]},
+    voicemail:{label:'Voicemail',script:()=>{const i=info();return `Hello, this is ${i.caller} with SMH Oklahoma. I’m calling with a general business inquiry about a property connected with the estate of ${i.estate}. Please return my call at your convenience. Thank you.`;},instruction:'Leave only an appropriate, non-confidential message and follow company policy for voicemail outreach.',buttons:[['Voicemail Left','end'],['No Voicemail Available','end']]},
+    end:{label:'Call Complete',script:'CALL COMPLETE',instruction:'Record an accurate CRM note and disposition. Note the attorney’s confirmed role, stated selling interest, general timeline if shared, and any authorized next step. Do not record privileged or unnecessary personal details.',buttons:[['Start New Call','opening']]}
+  };
+  function render(step){current=step;const item=flow[step]||flow.opening;stepLabel.textContent=item.label;scriptNode.textContent=typeof item.script==='function'?item.script():item.script;instructionNode.textContent=item.instruction||'';buttonsNode.replaceChildren();item.buttons.forEach(([label,next],idx)=>{const b=document.createElement('button');b.type='button';b.textContent=label;if(next==='end')b.className='paf-end';else if(idx>1)b.className='paf-secondary';b.addEventListener('click',()=>{history.push(current);render(next);});buttonsNode.appendChild(b);});document.getElementById('pafBack').disabled=history.length===0;}
+  window.openProbateAttorneyCallFlow=function(){priorFocus=document.activeElement;history=[];render('opening');overlay.classList.add('is-visible');overlay.setAttribute('aria-hidden','false');document.documentElement.style.overflow='hidden';closeButton.focus();};
+  function close(){if(!overlay.classList.contains('is-visible'))return;overlay.classList.remove('is-visible');overlay.setAttribute('aria-hidden','true');document.documentElement.style.overflow='';if(priorFocus&&priorFocus.focus)priorFocus.focus();}
+  closeButton.addEventListener('click',close);overlay.addEventListener('click',e=>{if(e.target===overlay)close();});document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+  document.getElementById('pafBack').addEventListener('click',()=>{if(history.length)render(history.pop());});
+  document.getElementById('pafRestart').addEventListener('click',()=>{history=[];render('opening');});
+  ['pafCallerName','pafAttorneyName','pafEstateName','pafPersonName'].forEach(id=>{const el=document.getElementById(id);el.addEventListener('input',()=>{if(current==='opening'||current==='representsPerson'||current==='voicemail')render(current);});});
+})();
+</script>
+
+
+<style id="caller-name-startup-style">
+#callerNameGate{position:fixed;inset:0;z-index:2147483000;background:rgba(9,16,28,.72);display:flex;align-items:center;justify-content:center;padding:20px;font-family:Arial,sans-serif}
+#callerNameGate .cng-card{width:min(440px,100%);background:#fff;color:#172033;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.35);padding:26px}
+#callerNameGate h2{font-size:21px;margin:0 0 8px}
+#callerNameGate p{font-size:14px;line-height:1.5;color:#4b5563;margin:0 0 18px}
+#callerNameGate label{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+#callerNameGate input{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:12px;font-size:16px;color:#111827}
+#callerNameGate button{margin-top:16px;width:100%;border:0;border-radius:8px;padding:12px;background:#145da0;color:white;font-size:15px;font-weight:700;cursor:pointer}
+#callerNameGate .cng-hint{font-size:12px;margin-top:10px;color:#64748b}
+</style>
+<div id="callerNameGate" role="dialog" aria-modal="true" aria-labelledby="callerNameGateTitle">
+ <form class="cng-card" id="callerNameGateForm">
+  <h2 id="callerNameGateTitle">Before we start…</h2>
+  <p>What is your name? We’ll use it automatically anywhere the call scripts say <strong>{Caller Name}</strong>.</p>
+  <label for="callerNameGateInput">Your name</label>
+  <input id="callerNameGateInput" name="callerName" autocomplete="name" placeholder="Enter your name" required maxlength="80">
+  <button type="submit">Start Call Flow</button>
+  <div class="cng-hint">You can change the name by refreshing the page and entering it again.</div>
+ </form>
+</div>
+<script id="caller-name-startup-script">
+(function(){
+ const gate=document.getElementById('callerNameGate');
+ const form=document.getElementById('callerNameGateForm');
+ const input=document.getElementById('callerNameGateInput');
+ if(!gate||!form||!input)return;
+ let callerName='';
+ function applyCallerName(name){
+  callerName=name.trim();
+  window.SMHCallerName=callerName;
+  document.querySelectorAll('#pafCallerName').forEach(el=>{el.value=callerName;});
+  function replaceTokens(root){
+   if(!root)return;
+   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+   const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+   nodes.forEach(node=>{if(node.nodeValue&&node.nodeValue.includes('{Caller Name}'))node.nodeValue=node.nodeValue.replace(/\{Caller Name\}/g,callerName);});
+   root.querySelectorAll&&root.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{if(el.placeholder.includes('{Caller Name}'))el.placeholder=el.placeholder.replace(/\{Caller Name\}/g,callerName);});
+  }
+  replaceTokens(document.body);
+  // Scripts are rendered dynamically; replace the token whenever new script text appears.
+  if(!window.__smhCallerNameObserver){
+   window.__smhCallerNameObserver=new MutationObserver(records=>{
+    records.forEach(record=>{
+     if(record.type==='characterData'&&record.target.nodeValue&&record.target.nodeValue.includes('{Caller Name}'))record.target.nodeValue=record.target.nodeValue.replace(/\{Caller Name\}/g,window.SMHCallerName||'');
+     record.addedNodes&&record.addedNodes.forEach(node=>{if(node.nodeType===Node.TEXT_NODE){if(node.nodeValue.includes('{Caller Name}'))node.nodeValue=node.nodeValue.replace(/\{Caller Name\}/g,window.SMHCallerName||'');}else if(node.nodeType===Node.ELEMENT_NODE)replaceTokens(node);});
+    });
+   });
+   window.__smhCallerNameObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
+  }
+ }
+ form.addEventListener('submit',function(event){
+  event.preventDefault();const name=input.value.trim();if(!name){input.focus();return;}
+  applyCallerName(name);gate.remove();document.body.style.overflow='';
+  try{sessionStorage.setItem('smhCallerName',name);}catch(e){}
+ });
+ document.body.style.overflow='hidden';
+ // Ask on each fresh page load; prefill the last answer for convenience.
+ try{input.value=sessionStorage.getItem('smhCallerName')||'';}catch(e){}
+ input.focus();
+})();
+</script>
+
+
+
+<style id="sales-numbers-free-drag-style">
+#salesNumbersDragHandle { cursor: move; touch-action: none; user-select: none; }
+</style>
+<script id="sales-numbers-free-drag">
+(function(){
+  const panel=document.getElementById('salesNumbersPanel');
+  const handle=document.getElementById('salesNumbersDragHandle');
+  if(!panel||!handle) return;
+  let active=false, pointer=null, startX=0, startY=0, left=0, top=0;
+  handle.addEventListener('pointerdown',function(e){
+    if(e.button!==undefined && e.button!==0) return;
+    if(e.target.closest('button,input,textarea,select,a')) return;
+    const r=panel.getBoundingClientRect();
+    active=true; pointer=e.pointerId; startX=e.clientX; startY=e.clientY; left=r.left; top=r.top;
+    panel.style.position='fixed'; panel.style.left=left+'px'; panel.style.top=top+'px';
+    panel.style.right='auto'; panel.style.bottom='auto'; panel.style.margin='0';
+    try{handle.setPointerCapture(pointer);}catch(_){}
+    e.preventDefault();
+  });
+  handle.addEventListener('pointermove',function(e){
+    if(!active || e.pointerId!==pointer) return;
+    panel.style.left=(left+e.clientX-startX)+'px';
+    panel.style.top=(top+e.clientY-startY)+'px';
+    e.preventDefault();
+  });
+  function stop(e){if(!active || (e && e.pointerId!==pointer)) return; active=false; pointer=null;}
+  handle.addEventListener('pointerup',stop);
+  handle.addEventListener('pointercancel',stop);
+})();
+</script>
+
 </body>
 </html>
+
