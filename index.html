@@ -280,6 +280,7 @@
        SALES NUMBERS — DAILY EXHAUSTION TRACKER
        ========================= */
     .sales-numbers-panel {
+        resize: none !important;
         position: fixed;
         right: 170px;
         left: auto;
@@ -2795,7 +2796,7 @@
             </div>
             <div class="stats-history-card" style="margin-top:12px;">
                 <div class="stats-history-scroll"><table class="stats-history-table"><thead><tr><th>Shift</th><th>Dials</th><th>Correct</th><th>Wrong</th><th>Voicemail</th><th>Handoffs</th></tr></thead><tbody id="statsWeeklyBody"></tbody></table></div>
-                <div class="stats-history-note">Each row is one 10PM–6AM Philippine shift. The current shift is included automatically.</div>
+                <div class="stats-history-note">Each row is one 10PM–9AM Philippine stats rollover (3 hours after shift end). The current shift is included automatically.</div>
             </div>
         </div>
 
@@ -3430,7 +3431,7 @@ function getProbateInfo() {
 
 const foreclosureFlow = {
   opening: {
-    script: () => { const i=getForeclosureInfo(); return `Hi, ${i.firstName},\n\n(wait)\n\nHey ${i.fullName}, this is {Caller Name} with SMH Oklahoma. We noticed you had a foreclosure filing on your home here recently. I just wanted to reach out to make sure you know your options so the lender doesn't blindside you. Do you have a couple of minutes to talk?`; },
+    script: () => { const i=getForeclosureInfo(); return `Hi, ${i.firstName},\n\n(wait)\n\nHey ${i.firstName}, this is {Caller Name} with SMH Oklahoma. We noticed you had a foreclosure filing on your home here recently. I just wanted to reach out to make sure you know your options so the lender doesn't blindside you. Do you have a couple of minutes to talk?`; },
     instruction: "Pause and listen. Choose the one response that matches what the person says.",
     buttons:[
       {text:"We already have a buyer",next:"hasBuyer"},
@@ -4216,13 +4217,13 @@ function getPhilippineHour(dateValue) {
 
 function isCallShiftActive(dateValue) {
     const hour = getPhilippineHour(dateValue);
-    return hour >= 22 || hour < 8;
+    return hour >= 22 || hour < 9;
 }
 
 function getShiftDateKey(dateValue) {
     const date = dateValue instanceof Date ? new Date(dateValue.getTime()) : new Date(dateValue || Date.now());
     const hour = getPhilippineHour(date);
-    if (hour < 8) date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
+    if (hour < 9) date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
     return getPhilippineDateKey(date);
 }
 
@@ -4806,7 +4807,7 @@ function resetCallStats(isAutomaticRefresh) {
     showStatsView(activeStatsView);
 
     if (isAutomaticRefresh) {
-        console.info("Call statistics rolled over to a new 10PM–6AM Philippine shift.");
+        console.info("Call statistics rolled over to a new 10PM–9AM Philippine stats rollover (3 hours after shift end).");
     }
 }
 
@@ -4946,6 +4947,9 @@ function incrementCounter() {
     updateCounterTimeTooltip();
     updateCallStatsDisplay();
 
+    // Return the call flow to its home/opening step after every new dial.
+    history = [];
+    renderStep("opening");
 }
 
 
@@ -4953,6 +4957,11 @@ function decrementCounter() {
     if (clickCount <= 0) return;
     clickCount = Math.max(0, clickCount - 1);
     counterWarningTriggered = false;
+    if (isCallShiftActive() && Number(callStats.totalDials) > 0) {
+        callStats.totalDials = Math.max(0, Number(callStats.totalDials) - 1);
+        saveCallStats();
+        updateCallStatsDisplay();
+    }
     localStorage.setItem("smhCallCount", clickCount);
     if (clickCount === 0) {
         lastCounterClickTime = null;
@@ -5786,6 +5795,21 @@ function toggleKnowledgeBase() {
  const input = document.getElementById("knowledgeBaseSearch");
  if (input) input.focus();
 }
+let knowledgeBaseAutoHomeTimer = null;
+function returnKnowledgeBaseToHome() {
+ const results = document.getElementById("knowledgeBaseResults");
+ if (!results) return;
+ results.querySelectorAll(".kb-result.open").forEach(card => {
+   card.classList.remove("open");
+   const button = card.querySelector(".kb-result-title");
+   if (button) button.setAttribute("aria-expanded", "false");
+ });
+ knowledgeBaseAutoHomeTimer = null;
+}
+function armKnowledgeBaseAutoHome() {
+ if (knowledgeBaseAutoHomeTimer) clearTimeout(knowledgeBaseAutoHomeTimer);
+ knowledgeBaseAutoHomeTimer = setTimeout(returnKnowledgeBaseToHome, 10 * 60 * 1000);
+}
 function renderKnowledgeBaseResults() {
  const input = document.getElementById("knowledgeBaseSearch");
  const results = document.getElementById("knowledgeBaseResults");
@@ -5824,7 +5848,7 @@ function renderKnowledgeBaseResults() {
      });
      answer.appendChild(notes);
    }
-   title.addEventListener("click", () => { if (entry.callFlow === "probateAttorney") { openProbateAttorneyCallFlow(); return; } const open = !card.classList.contains("open"); results.querySelectorAll(".kb-result.open").forEach(other => { other.classList.remove("open"); const otherButton = other.querySelector(".kb-result-title"); if (otherButton) otherButton.setAttribute("aria-expanded", "false"); }); card.classList.toggle("open", open); title.setAttribute("aria-expanded", String(open)); });
+   title.addEventListener("click", () => { if (entry.callFlow === "probateAttorney") { openProbateAttorneyCallFlow(); return; } const open = !card.classList.contains("open"); results.querySelectorAll(".kb-result.open").forEach(other => { other.classList.remove("open"); const otherButton = other.querySelector(".kb-result-title"); if (otherButton) otherButton.setAttribute("aria-expanded", "false"); }); card.classList.toggle("open", open); title.setAttribute("aria-expanded", String(open)); if (open) armKnowledgeBaseAutoHome(); else if (!results.querySelector(".kb-result.open") && knowledgeBaseAutoHomeTimer) { clearTimeout(knowledgeBaseAutoHomeTimer); knowledgeBaseAutoHomeTimer = null; } });
    card.appendChild(title); card.appendChild(answer); results.appendChild(card);
  });
 }
@@ -6707,25 +6731,20 @@ window.addEventListener("scroll", function () {
 
 
 /* ============================================================
-   SALES NUMBERS — DAILY 9 PM PH RESET (PHILIPPINE TIME)
+   SALES NUMBERS — PERSISTENT DATA + 8 PM OKLAHOMA RESET
    ============================================================ */
 const SALES_NUMBERS_STORAGE_KEY = "smhSalesNumbers";
-const SALES_NUMBERS_RESET_KEY = "smhSalesNumbersResetDate";
-const SALES_NUMBERS_RESET_HOUR = 21;
+const SALES_NUMBERS_RESET_KEY = "smhSalesNumbersResetDateOklahoma";
+const SALES_NUMBERS_POSITION_KEY = "smhSalesNumbersPosition";
 let salesNumbersResetTimer = null;
 
-function getPhilippineDateParts(date = new Date()) {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Manila", year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", hourCycle: "h23"
+function getOklahomaClockParts(date = new Date()) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hourCycle: "h23"
     }).formatToParts(date).reduce((acc, part) => { acc[part.type] = part.value; return acc; }, {});
-    return {
-        year: Number(parts.year), month: Number(parts.month), day: Number(parts.day),
-        hour: Number(parts.hour), dateKey: `${parts.year}-${parts.month}-${parts.day}`
-    };
+    return { year: parts.year, month: parts.month, day: parts.day, hour: Number(parts.hour), minute: Number(parts.minute), dateKey: `${parts.year}-${parts.month}-${parts.day}` };
 }
-function getPhilippineResetKey(date = new Date()) { return getPhilippineDateParts(date).dateKey; }
-function isAfterPhilippineResetTime(date = new Date()) { return getPhilippineDateParts(date).hour >= SALES_NUMBERS_RESET_HOUR; }
 
 function updateSalesNumbersDisplay() {
     let exhaustedCount = 0;
@@ -6762,28 +6781,28 @@ function toggleSalesNumber(index) {
     saveSalesNumbers();
 }
 
-function clearExhaustedSalesNumbers() {
+function clearSalesNumbersForShift() {
     for (let i = 1; i <= 5; i++) {
         const checkbox = document.getElementById(`salesNumberCheck${i}`);
+        const input = document.getElementById(`salesNumberInput${i}`);
         if (checkbox) checkbox.checked = false;
+        if (input) input.value = "";
     }
-    updateSalesNumbersDisplay();
     saveSalesNumbers();
 }
 
-function enforceSalesNumbersDailyReset() {
-    const todayKey = getPhilippineResetKey();
-    const savedResetDate = localStorage.getItem(SALES_NUMBERS_RESET_KEY);
-    if (savedResetDate !== todayKey && isAfterPhilippineResetTime()) {
-        clearExhaustedSalesNumbers();
-        localStorage.setItem(SALES_NUMBERS_RESET_KEY, todayKey);
-    } else if (!savedResetDate) {
-        localStorage.setItem(SALES_NUMBERS_RESET_KEY, todayKey);
+function enforceOklahomaSalesNumbersReset() {
+    const clock = getOklahomaClockParts();
+    let savedResetDate = "";
+    try { savedResetDate = localStorage.getItem(SALES_NUMBERS_RESET_KEY) || ""; } catch (error) {}
+    if (clock.hour >= 20 && savedResetDate !== clock.dateKey) {
+        clearSalesNumbersForShift();
+        try { localStorage.setItem(SALES_NUMBERS_RESET_KEY, clock.dateKey); } catch (error) {}
     }
 }
 
 function loadSalesNumbers() {
-    enforceSalesNumbersDailyReset();
+    enforceOklahomaSalesNumbersReset();
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(SALES_NUMBERS_STORAGE_KEY) || "null"); }
     catch (error) { saved = null; }
@@ -6796,24 +6815,30 @@ function loadSalesNumbers() {
         checkbox.checked = Boolean(entry.exhausted);
     }
     updateSalesNumbersDisplay();
-    scheduleSalesNumbersReset();
+    restoreSalesNumbersPosition();
+    if (salesNumbersResetTimer) clearInterval(salesNumbersResetTimer);
+    salesNumbersResetTimer = setInterval(enforceOklahomaSalesNumbersReset, 15000);
 }
 
-function getNextPhilippineResetTimestamp() {
-    const ph = getPhilippineDateParts();
-    const todayReset = new Date(Date.UTC(ph.year, ph.month - 1, ph.day, 13, 0, 0));
-    const tomorrowReset = new Date(Date.UTC(ph.year, ph.month - 1, ph.day + 1, 13, 0, 0));
-    return Date.now() < todayReset.getTime() ? todayReset.getTime() : tomorrowReset.getTime();
+function saveSalesNumbersPosition() {
+    const panel = document.getElementById("salesNumbersPanel");
+    if (!panel) return;
+    const rect = panel.getBoundingClientRect();
+    try { localStorage.setItem(SALES_NUMBERS_POSITION_KEY, JSON.stringify({ left: rect.left, top: rect.top })); } catch (error) {}
 }
 
-function scheduleSalesNumbersReset() {
-    if (salesNumbersResetTimer) clearTimeout(salesNumbersResetTimer);
-    const delay = Math.max(1000, getNextPhilippineResetTimestamp() - Date.now());
-    salesNumbersResetTimer = setTimeout(function () {
-        clearExhaustedSalesNumbers();
-        localStorage.setItem(SALES_NUMBERS_RESET_KEY, getPhilippineResetKey());
-        scheduleSalesNumbersReset();
-    }, delay);
+function restoreSalesNumbersPosition() {
+    const panel = document.getElementById("salesNumbersPanel");
+    if (!panel) return;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(SALES_NUMBERS_POSITION_KEY) || "null"); } catch (error) {}
+    if (!saved || !Number.isFinite(saved.left) || !Number.isFinite(saved.top)) return;
+    panel.style.position = "fixed";
+    panel.style.left = saved.left + "px";
+    panel.style.top = saved.top + "px";
+    panel.style.right = "auto";
+    panel.style.bottom = "auto";
+    panel.style.margin = "0";
 }
 
 
@@ -6825,6 +6850,7 @@ renderStep(
     "opening"
 );
 
+loadSalesNumbers();
 updateCounterDisplay();
 updateCallStatsDisplay();
 
@@ -7154,7 +7180,7 @@ updateCallStatsDisplay();
     panel.style.top=(top+e.clientY-startY)+'px';
     e.preventDefault();
   });
-  function stop(e){if(!active || (e && e.pointerId!==pointer)) return; active=false; pointer=null;}
+  function stop(e){if(!active || (e && e.pointerId!==pointer)) return; active=false; pointer=null; if(typeof saveSalesNumbersPosition === "function") saveSalesNumbersPosition();}
   handle.addEventListener('pointerup',stop);
   handle.addEventListener('pointercancel',stop);
 })();
