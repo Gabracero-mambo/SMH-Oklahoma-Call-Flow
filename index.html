@@ -3493,9 +3493,9 @@ const foreclosureFlow = {
     buttons:[{text:"Continue",next:"sellingOption"}]
   },
   sellingOption:{
-    script:"I appreciate you sharing. Would you be open at all to hearing an offer for the home or are you dead set on catching the loan up and keeping the home?",
-    instruction:"Follow the prospect's answer.",
-    buttons:[{text:"Yes",next:"qualifying"},{text:"No",next:"politeClose"}]
+    script:"I appreciate you sharing. Would you be open to hearing an offer for the home?",
+    instruction:"If yes, proceed directly to the qualifying questions. If no, close politely.",
+    buttons:[{text:"Yes",next:"qualifyingQuestions"},{text:"No",next:"politeClose"}]
   },
   processHelp:{
     script:"One of the best resources I can be is understanding your timelines so it’s not a big unknown that causes stress. Would it be helpful to understand the foreclosure process a little better?",
