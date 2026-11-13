@@ -991,9 +991,28 @@
         .website-shortcut-fab::after { display: none; }
     }
 
+    /* V6.17 — persistent Lead Qualification shortcut in the left navigation. */
+    .lead-qualification-shortcut {
+        width:100%; margin:8px 0 12px; padding:10px 7px; border:1px solid #93c5fd;
+        border-radius:7px; background:linear-gradient(180deg,#2563eb,#1e40af);
+        color:#fff; font:800 9px/1.25 Arial,sans-serif; letter-spacing:.35px;
+        cursor:pointer; box-shadow:0 3px 8px rgba(15,23,42,.18);
+    }
+    .lead-qualification-shortcut:hover { filter:brightness(1.12); transform:translateY(-1px); }
+
     /* =========================
        OKLAHOMA DIGITAL CLOCK
        ========================= */
+
+    .philippine-clock {
+        position:fixed; right:16px; bottom:75px; z-index:1000; min-width:155px;
+        padding:7px 14px 8px; border:1px solid rgba(74,222,128,.38); border-radius:9px;
+        background:linear-gradient(145deg,rgba(13,45,36,.97),rgba(5,30,24,.97));
+        color:#9af5bd; text-align:center; font:700 15px "Courier New",monospace;
+        letter-spacing:1.2px; box-shadow:0 8px 22px rgba(0,20,40,.2); user-select:none;
+    }
+    .philippine-clock::before { content:"PHILIPPINE TIME"; display:block; margin-bottom:2px;
+        color:#83b99a; font:800 7px Arial,sans-serif; letter-spacing:1.5px; }
 
     .oklahoma-clock {
         position: fixed;
@@ -2848,6 +2867,15 @@
         </button>
 
         <button
+            type="button"
+            class="lead-qualification-shortcut"
+            onclick="openLeadQualification()"
+            title="Open Lead Qualification Form"
+        >
+            LEAD QUALIFICATION
+        </button>
+
+        <button
             id="foreclosureMode"
             class="mode-button active"
             onclick="switchMode('foreclosure')"
@@ -3303,6 +3331,14 @@
             DISMISS
         </button>
     </div>
+</div>
+
+<div
+    id="philippineClock"
+    class="philippine-clock"
+    aria-label="Current Philippine time"
+>
+    --:--:--
 </div>
 
 <div
@@ -4134,6 +4170,18 @@ const probateFlow = {
             { text: "Voicemail Left", next: "end" },
             { text: "No Voicemail", next: "end" }
         ]
+    },
+
+    qualifying: {
+        script: "Qualifying Questions",
+        instruction: "Complete the Lead Qualification Form for this probate lead.",
+        buttons: [{ text: "Set Appointment", next: "bookAppointment" }]
+    },
+
+    qualifyingQuestions: {
+        script: "Qualifying Questions",
+        instruction: "Complete the Lead Qualification Form for this probate lead.",
+        buttons: [{ text: "Set Appointment", next: "bookAppointment" }]
     },
 
     end: {
@@ -6068,6 +6116,27 @@ function checkShiftEndAlarm() {
    OKLAHOMA DIGITAL CLOCK
    ============================================================ */
 
+function updatePhilippineClock() {
+    const clock = document.getElementById("philippineClock");
+    if (!clock) return;
+    clock.textContent = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Manila", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+    }).format(new Date());
+}
+
+function openLeadQualification() {
+    if (currentStep !== "qualifying" && currentStep !== "qualifyingQuestions") {
+        history.push(currentStep);
+        renderStep("qualifyingQuestions");
+    } else if (typeof window.lqStartNewLead === "function") {
+        window.lqStartNewLead();
+    }
+    setTimeout(function () {
+        const form = document.getElementById("leadQualification");
+        if (form) form.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+}
+
 function updateOklahomaClock() {
 
     const clock =
@@ -6297,6 +6366,8 @@ document.addEventListener("keydown", function(event) {
    CLOCK INITIALIZATION
    ============================================================ */
 
+updatePhilippineClock();
+setInterval(updatePhilippineClock, 1000);
 updateOklahomaClock();
 
 setInterval(function () {
@@ -7245,10 +7316,52 @@ updateCallStatsDisplay();
 .lq-summary { white-space:pre-wrap; background:white; border:1px solid #cbd5e1; border-radius:8px; padding:14px; max-height:65vh; overflow:auto; }
 @media(max-width:650px){.lq-fields{grid-template-columns:1fr}.lq-field.wide{grid-column:auto}}
 @media print { body * { visibility:hidden !important; } #leadQualification,#leadQualification * {visibility:visible !important;} #leadQualification {position:absolute;left:0;top:0;width:100%;border:0;} .lq-actions,.lq-refresh {display:none !important;} }
+
+/* V6.18 — fixed shortcut placement and clear clock clearance. */
+.lead-qualification-shortcut {
+    position: fixed !important;
+    left: 16px !important;
+    bottom: 52px !important;
+    z-index: 9500 !important;
+    width: 190px !important;
+    min-height: 42px;
+    margin: 0 !important;
+    padding: 11px 14px !important;
+    border: 1px solid #4b5563 !important;
+    border-radius: 7px !important;
+    background: #343a40 !important;
+    color: #fff !important;
+    font: 800 10px/1.2 Arial, sans-serif !important;
+    letter-spacing: .4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.28);
+}
+.lead-qualification-shortcut:hover {
+    background: #252a2f !important;
+    filter: none !important;
+    transform: none !important;
+}
+.handoff-fab {
+    right: 190px !important;
+    bottom: 25px !important;
+}
+@media (max-width: 650px) {
+    .lead-qualification-shortcut {
+        left: 10px !important;
+        bottom: 48px !important;
+        width: 160px !important;
+        min-height: 38px;
+    }
+    .handoff-fab {
+        right: 180px !important;
+        bottom: 10px !important;
+        width: 58px;
+        height: 58px;
+    }
+}
 </style>
 <script id="v614-qualification-engine">
 (function(){
-const LQ_FIELDS = {"Prospect & Property Information": [["owner1", "Homeowner 1 full name", "text"], ["owner2", "Homeowner 2 full name (optional)", "text"], ["phone", "Primary phone number", "tel"], ["altphone", "Alternative phone number", "tel"], ["email", "Email address", "email"], ["address", "Property address", "text"], ["mailing", "Different mailing address (if applicable)", "text"], ["type", "Property type", "select:Single-family;Condo;Townhouse;Multi-family;Vacant land;Other"], ["beds", "Bedrooms", "number"], ["baths", "Bathrooms", "number"], ["ownership", "Who owns the property?", "text"], ["decisionmakers", "Other owners or decision-makers", "textarea"]], "Motivation": [["why", "Why are you considering selling?", "textarea"], ["duration", "How long have you been thinking about selling?", "text"], ["biggest", "What's the biggest reason behind the sale?", "textarea"], ["ifnotsold", "What are your plans if it doesn't sell?", "textarea"], ["difficulty", "Has managing the property become difficult?", "text"], ["accomplish", "What would selling help you accomplish?", "textarea"], ["alternatives", "What other options have you considered?", "textarea"], ["ideal", "What's your ideal outcome?", "textarea"], ["barriers", "What's holding you back?", "textarea"], ["importance", "How important is selling right now?", "select:Very important;Somewhat important;Not urgent;Just exploring"], ["holdyear", "What happens if you hold onto the property for another year?", "textarea"]], "Timeline": [["saletime", "When would you ideally like to sell?", "text"], ["timingreason", "Why that timing?", "textarea"], ["readyterms", "If the terms make sense, are you ready to move forward?", "select:Yes;No;Maybe;Unknown"], ["prereq", "What needs to happen before you can sell?", "textarea"], ["deadlines", "Any important deadlines?", "text"], ["move", "Have you made arrangements to move?", "text"], ["speedprice", "Which matters more: speed or highest price?", "select:Speed;Highest price;A balance"], ["readiness", "How ready are you to sell today?", "select:Ready now;Within 30 days;Within 3 months;Just exploring"], ["flexible", "How flexible is your timeline?", "text"], ["delays", "What could delay the sale?", "textarea"], ["prevent", "If we agreed on a price and terms that worked, what would prevent you from moving forward?", "textarea"]], "Condition": [["condition", "How would you describe the property's current condition?", "textarea"], ["renovations", "What renovations have you made in the last 5–10 years?", "textarea"], ["repairs", "What repairs are needed?", "textarea"], ["occupancy", "Is the property occupied?", "select:Owner-occupied;Tenant-occupied;Vacant;Other"], ["roofage", "Approximate age/condition of roof", "text"], ["hvacage", "Approximate age/condition of HVAC", "text"], ["systems", "Any foundation, plumbing, electrical, or water issues?", "textarea"], ["updates", "Have the kitchen or bathrooms been updated?", "textarea"], ["cosmetic", "Any cosmetic repairs needed?", "textarea"], ["belongings", "Will belongings need to be removed?", "text"], ["asis", "Would you prefer to sell as-is?", "select:Yes;No;Maybe;Unknown"], ["buyerrepairs", "If you were buying this home today, what repairs or improvements would you want to make?", "textarea"]], "Price": [["desiredprice", "What price are you hoping to get?", "text"], ["pricebasis", "How did you arrive at that price?", "textarea"], ["grossnet", "Are you focused on the gross sale price or the amount you take home?", "select:Gross price;Net proceeds;Both;Not sure"], ["asisprice", "What would you expect for an as-is offer?", "text"], ["offers", "Have you received any offers?", "textarea"], ["mortgage", "Is there a mortgage or other debt on the property? Approximate balance?", "text"], ["priority", "What matters more: highest price or convenience and certainty?", "select:Highest price;Convenience and certainty;Both"], ["priceflex", "How flexible are you on price?", "text"], ["otherpriority", "Aside from price, what's most important when selling?", "textarea"]], "Foreclosure": [["notices", "Have you received any notices from the lender or court?", "select:Yes;No;Unknown"], ["default", "Have you received a Notice of Default?", "select:Yes;No;Unknown"], ["saleNotice", "Have you received a Notice of Sale?", "select:Yes;No;Unknown"], ["auction", "Is an auction scheduled? If yes, when?", "text"], ["reinstate", "Do you know the reinstatement amount?", "text"], ["balance", "Approximate mortgage balance", "text"], ["taxes", "Are property taxes past due? Amount, if known", "text"], ["liens", "Any other liens or debts against the property?", "textarea"], ["attorney", "Are you working with an attorney?", "text"], ["prevention", "Have you tried loan modification or another option to prevent foreclosure?", "textarea"], ["lender", "Have you spoken with your lender recently?", "textarea"]], "Ownership & Decision-making": [["isowner", "Are you the legal owner of the property?", "select:Yes;No;Partially;Unknown"], ["owners", "Who else is listed as an owner?", "textarea"], ["aware", "Are all owners aware you're considering selling?", "select:Yes;No;Some;Unknown"], ["approval", "Does anyone else need to approve the sale?", "textarea"], ["capacity", "Are you an executor, trustee, or authorized representative?", "text"], ["involve", "Who else should be involved in the conversation?", "textarea"]], "Follow-up": [["contact", "Preferred contact method", "select:Phone call;Text;Email"], ["callback", "Best callback number", "tel"], ["besttime", "Best time to contact you", "text"], ["followdate", "Preferred follow-up date", "date"], ["followtime", "Preferred follow-up time", "text"], ["notes", "Additional notes", "textarea"]]};
+const LQ_FIELDS = {"Timeline": [["saletime", "When would you ideally like to sell?", "text"], ["prereq", "What needs to happen before you can sell?", "textarea"], ["move", "Have you made arrangements to move?", "text"], ["speedprice", "Which matters more: speed or highest price?", "select:Speed;Highest price;A balance"], ["flexible", "How flexible is your timeline?", "text"], ], "Condition": [["condition", "How would you describe the property's current condition?", "textarea"], ["renovations", "What renovations have you made in the last 5–10 years?", "textarea"], ["repairs", "What repairs are needed?", "textarea"], ["occupancy", "Is the property occupied?", "select:Owner-occupied;Tenant-occupied;Vacant;Other"], ["roofage", "Approximate age/condition of roof", "text"], ["hvacage", "Approximate age/condition of HVAC", "text"], ["systems", "Any foundation, plumbing, electrical, or water issues?", "textarea"], ["updates", "Have the kitchen or bathrooms been updated?", "textarea"], ["cosmetic", "Any cosmetic repairs needed?", "textarea"], ["belongings", "Will belongings need to be removed?", "text"], ["asis", "Would you prefer to sell as-is?", "select:Yes;No;Maybe;Unknown"], ["buyerrepairs", "If you were buying this home today, what repairs or improvements would you want to make?", "textarea"]], "Price": [["desiredprice", "What price are you hoping to get?", "text"], ["grossnet", "Are you focused on the gross sale price or the amount you take home?", "select:Gross price;Net proceeds;Both;Not sure"], ["asisprice", "What would you expect for an as-is offer?", "text"], ["offers", "Have you received any offers?", "textarea"], ["mortgage", "Is there a mortgage or other debt on the property? Approximate balance?", "text"], ["priority", "What matters more: highest price or convenience and certainty?", "select:Highest price;Convenience and certainty;Both"], ["priceflex", "How flexible are you on price?", "text"], ["otherpriority", "Aside from price, what's most important when selling?", "textarea"]], "Follow-up": [["contact", "Preferred contact method", "select:Phone call;Text;Email"], ["callback", "Best callback number", "tel"], ["besttime", "Best time to contact you", "text"], ["followdate", "Preferred follow-up date", "date"], ["followtime", "Preferred follow-up time", "text"], ["notes", "Additional notes", "textarea"]]};
 const LQ_VARIATIONS = {"why": ["What has you thinking about selling?", "What's prompting you to consider a sale?", "Can you share what's motivating the move?"], "duration": ["How long has selling been on your mind?", "When did you first start considering a sale?", "Has this been something you've considered for a while?"], "biggest": ["What's the main thing driving this decision?", "What's the biggest factor for you right now?", "If you had to pick one, what's pushing the sale?"], "holdyear": ["What do you think happens if you keep the property another year?", "How would holding onto it for another 12 months affect you?", "If you decide not to sell this year, what does that look like?"], "prevent": ["If we found a price and terms that worked, what might stop you from moving ahead?", "Assuming the numbers made sense, is anything standing in the way of moving forward?", "What would need to be resolved before you could say yes?"], "buyerrepairs": ["If you were the buyer today, what would you want to fix first?", "What improvements would you make if you purchased this home as-is?", "What would you flag during your own walkthrough?"], "otherpriority": ["Beyond the price, what matters most to you in this sale?", "Besides money, what would make this a successful sale for you?", "What's your biggest priority apart from the offer amount?"]};
 let lqAnswers = {};
 let lqWordings = {};
@@ -7287,11 +7400,12 @@ function lqShowSummary(){const area=document.getElementById("lqSummaryArea");if(
 function lqEdit(){document.querySelector("#leadQualification .lq-top").scrollIntoView({behavior:"smooth"});}
 async function lqCopy(){const text=lqBuildSummary();try{await navigator.clipboard.writeText(text);alert("Lead summary copied.");}catch(e){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();alert("Lead summary copied.");}}
 function lqPrint(){const text=lqBuildSummary();const w=window.open("","_blank");if(!w){alert("Please allow pop-ups to print the summary.");return;}w.document.write("<html><head><title>Lead Qualification Summary</title></head><body><pre style='white-space:pre-wrap;font:14px Arial'>"+lqEscape(text)+"</pre></body></html>");w.document.close();w.print();}
-function lqContinue(){if(typeof renderStep==="function")renderStep("handoff");}
+function lqContinue(){if(typeof renderStep==="function")renderStep(currentMode==="foreclosure"?"handoff":"bookAppointment");}
 function lqClear(){if(!confirm("Clear all lead qualification answers? This cannot be undone."))return;lqAnswers={};lqWordings={};lqSave();lqRender();}
 window.lqRefreshField=lqRefresh;window.lqShowSummary=lqShowSummary;window.lqEdit=lqEdit;window.lqCopy=lqCopy;window.lqPrint=lqPrint;window.lqContinue=lqContinue;window.lqClear=lqClear;
 lqInit();
-window.lqAttach=function(){let host=document.getElementById("leadQualification");if(!host){const ins=document.getElementById("instruction");if(!ins)return;host=document.createElement("div");host.id="leadQualification";ins.insertAdjacentElement("afterend",host);}lqRender();};
+window.lqStartNewLead=function(){lqAnswers={};lqWordings={};try{localStorage.removeItem(lqStoreKey);}catch(e){}lqRender();};
+window.lqAttach=function(){let host=document.getElementById("leadQualification");if(!host){const ins=document.getElementById("instruction");if(!ins)return;host=document.createElement("div");host.id="leadQualification";ins.insertAdjacentElement("afterend",host);}window.lqStartNewLead();};
 })();
 </script>
 
