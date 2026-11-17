@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SMH Oklahoma — Sales Call Flow V6.12</title>
+<title>SMH Oklahoma — Sales Call Flow V6.21</title>
 <!-- V5.15 — Upper-right transparent Spanish voicemail chat-bubble button -->
 <!-- V5.13 — Spanish voicemail button with Foreclosure + Probate scripts -->
 <!-- V5.5 — Floating Windows-style Call Notes with collapse/restore and drag -->
@@ -2891,6 +2891,16 @@
             PROBATE
         </button>
 
+        <button
+            id="foreclosurePreProbateMode"
+            class="mode-button v621-nav-button"
+            type="button"
+            onclick="openV621Workflow()"
+            title="Open the independent Foreclosure / Pre-Probate workflow"
+        >
+            FORECLOSURE /<br> PRE-PROBATE
+        </button>
+
         <div class="counter-panel">
 
             <button
@@ -3196,6 +3206,32 @@
 
                 </div>
 
+            </div>
+
+
+            <div id="v621Overlay" aria-hidden="true" aria-labelledby="v621Title">
+              <div id="v621Modal" class="v621-native-card">
+                <header class="v621-head"><h2 id="v621Title">FORECLOSURE / PRE-PROBATE</h2></header>
+                <div class="v621-fields info-box">
+                  <label>Caller Name<input id="v621Caller" type="text" placeholder="Caller Name"></label>
+                  <label>Prospect Name<input id="v621Prospect" type="text" placeholder="Prospect Name"></label>
+                  <label>Deceased Owner Name<input id="v621Deceased" type="text" placeholder="Deceased Name"></label>
+                  <label>Property Address<input id="v621Address" type="text" placeholder="Property address (if known)"></label>
+                </div>
+                <main class="v621-body card-body">
+                  <div class="section-title">CALLER — SPEAK THIS LINE</div>
+                  <div class="script-box" id="v621Script">The opening script will appear here.</div>
+                  <div class="section-title">LISTEN — WHAT DID THEY SAY?</div>
+                  <div class="instruction" id="v621Instruction">Choose the response that matches what the person says.</div>
+                  <div class="buttons" id="v621Buttons"></div>
+                  <div class="progress" id="v621Progress">Current step: opening</div>
+                  <div id="v621QualificationHost"></div>
+                  <div class="navigation v621-footer">
+                    <button type="button" id="v621Back" onclick="v621Back()" disabled>← BACK</button>
+                    <button type="button" onclick="v621Home()">HOME</button>
+                  </div>
+                </main>
+              </div>
             </div>
 
         </div>
@@ -6482,7 +6518,7 @@ async function popOutCallNotes() {
             "<strong>POP-OUT NOT AVAILABLE</strong>" +
             "Chrome's Document Picture-in-Picture feature is not available in this browser. " +
             "Open this tool in a current desktop version of Google Chrome and try again." +
-            "<br><button type=\"button\">CLOSE</button>";
+            "<br>";
         document.body.appendChild(notice);
         notice.querySelector("button").addEventListener("click", function () {
             notice.remove();
@@ -7399,8 +7435,8 @@ function lqBuildSummary(){let out="SMH OKLAHOMA — LEAD QUALIFICATION SUMMARY\n
 function lqShowSummary(){const area=document.getElementById("lqSummaryArea");if(!area)return;const summary=lqBuildSummary();area.innerHTML='<h3>Lead Summary</h3><pre class="lq-summary" id="lqSummaryText"></pre><div class="lq-actions"><button type="button" onclick="lqEdit()">EDIT ANSWERS</button><button type="button" onclick="lqCopy()">COPY SUMMARY</button><button type="button" onclick="lqPrint()">PRINT SUMMARY</button><button type="button" onclick="lqContinue()">CONTINUE TO APPOINTMENT / HANDOFF</button></div>';document.getElementById("lqSummaryText").textContent=summary;area.scrollIntoView({behavior:"smooth",block:"start"});}
 function lqEdit(){document.querySelector("#leadQualification .lq-top").scrollIntoView({behavior:"smooth"});}
 async function lqCopy(){const text=lqBuildSummary();try{await navigator.clipboard.writeText(text);alert("Lead summary copied.");}catch(e){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();alert("Lead summary copied.");}}
-function lqPrint(){const text=lqBuildSummary();const w=window.open("","_blank");if(!w){alert("Please allow pop-ups to print the summary.");return;}w.document.write("<html><head><title>Lead Qualification Summary</title></head><body><pre style='white-space:pre-wrap;font:14px Arial'>"+lqEscape(text)+"</pre></body></html>");w.document.close();w.print();}
-function lqContinue(){if(typeof renderStep==="function")renderStep(currentMode==="foreclosure"?"handoff":"bookAppointment");}
+function lqPrint(){const text=lqBuildSummary();const w=window.open("","_blank");if(!w){alert("Please allow pop-ups to print the summary.");return;}w.document.write("<html><head><title>Lead Qualification Summary</title></head><body><pre style='white-space:pre-wrap;font:14px Arial'>"+lqEscape(text)+"</pre>\n</body></html>");w.document.close();w.print();}
+function lqContinue(){if(window.v621Active&&typeof window.v621GoTo==="function"){window.v621GoTo("appointment");return;}if(typeof renderStep==="function")renderStep(currentMode==="foreclosure"?"handoff":"bookAppointment");}
 function lqClear(){if(!confirm("Clear all lead qualification answers? This cannot be undone."))return;lqAnswers={};lqWordings={};lqSave();lqRender();}
 window.lqRefreshField=lqRefresh;window.lqShowSummary=lqShowSummary;window.lqEdit=lqEdit;window.lqCopy=lqCopy;window.lqPrint=lqPrint;window.lqContinue=lqContinue;window.lqClear=lqClear;
 lqInit();
@@ -7409,6 +7445,168 @@ window.lqAttach=function(){let host=document.getElementById("leadQualification")
 })();
 </script>
 
+
+<style id="v621-independent-workflow-styles">
+/* V6.21 isolated workflow — native call-flow card styling */
+#v621Overlay{display:none;width:100%;margin:0;padding:0;background:transparent;position:static;overflow:visible}
+#v621Overlay.is-visible{display:block}
+#v621Modal{width:100%;max-width:none;min-height:0;max-height:none;overflow:visible;background:#fff;color:#111827;border:0;border-radius:10px;box-shadow:0 5px 16px rgba(0,0,0,.10);font-family:Arial,Helvetica,sans-serif}
+.v621-head{background:#1f2937;color:#fff;padding:16px;display:flex;align-items:center;min-height:75px;border:0}
+.v621-head h2{margin:0;font-size:18px;font-weight:700;letter-spacing:0}
+.v621-fields.info-box{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 14px 0;padding:14px;background:#eef2ff;border-radius:8px}
+.v621-fields label{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.03em}
+.v621-fields input{box-sizing:border-box;width:100%;min-width:0;padding:9px 10px;border:1px solid #c9ced6;border-radius:6px;font:13px Arial,sans-serif;background:#fff;color:#111827}
+.v621-body.card-body{padding:0 14px 14px}
+.v621-body .section-title{font-size:10px;font-weight:bold;color:#657184;letter-spacing:1px;margin-top:18px;margin-bottom:7px}
+#v621Script.script-box{white-space:pre-wrap;background:#fafafa;border:1px solid #dfe3e8;border-radius:8px;padding:15px;min-height:55px;font:17px/1.55 "Times New Roman",Times,serif;color:#111827;box-shadow:none}
+#v621Instruction.instruction{display:block;background:#fff7ed;border-left:3px solid #f97316;padding:11px;margin-top:7px;margin-bottom:0;border-radius:4px;font-size:11px;line-height:1.45;color:#334155;white-space:pre-wrap}
+#v621Buttons.buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+#v621Buttons.buttons button{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:11px 12px;min-height:38px;font-size:11px;font-weight:800;letter-spacing:.1px;cursor:pointer;color:#fff;transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;box-shadow:0 5px 12px rgba(15,23,42,.13),inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(0,0,0,.12);text-shadow:0 1px 2px rgba(0,0,0,.18);background:linear-gradient(145deg,#3b82f6,#1d4ed8)}
+#v621Buttons.buttons button:hover{transform:translateY(-2px);filter:brightness(1.05)}
+#v621Buttons.buttons button:active{transform:translateY(0)}
+#v621Buttons button.v621-success{background:linear-gradient(145deg,#22c55e,#129447)}
+#v621Buttons button.v621-danger{background:linear-gradient(145deg,#ef4444,#dc2626)}
+#v621Buttons button.v621-secondary{background:linear-gradient(145deg,#64748b,#475569)}
+#v621Buttons button.v621-end{background:linear-gradient(145deg,#0f766e,#115e59)}
+#v621Progress.progress{margin-top:7px;font-size:9px;color:#8b95a4}
+.v621-footer.navigation{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:17px;padding:0;border:0}
+.v621-footer.navigation button{border:0;border-radius:6px;padding:10px;font-size:11px;font-weight:bold;cursor:pointer;color:#fff;background:#6b7280;min-height:34px}
+.v621-footer.navigation button:disabled{opacity:.4;cursor:not-allowed}
+#v621QualificationHost{margin-top:16px}
+#v621QualificationHost #leadQualification{margin:0!important}
+@media(max-width:600px){.v621-fields.info-box{grid-template-columns:1fr;margin:10px 10px 0;padding:10px}.v621-body.card-body{padding:0 10px 10px}.v621-head{padding:14px}.v621-head h2{font-size:15px}#v621Script.script-box{font-size:15px;padding:13px}#v621Buttons.buttons{grid-template-columns:1fr 1fr}}
+</style>
+
+<script id="v621-independent-workflow-engine">
+(function(){
+  const $ = id => document.getElementById(id);
+  const overlay=$('v621Overlay'), title=$('v621Title'), scriptNode=$('v621Script'), instructionNode=$('v621Instruction'), progressNode=$('v621Progress'), buttonsNode=$('v621Buttons'), backButton=$('v621Back'), qualificationHost=$('v621QualificationHost');
+  let path=null, step='picker', history=[], priorFocus=null, leadFormShown=false;
+  const caller=()=>($('v621Caller').value.trim()||'{Caller Name}');
+  const prospect=()=>($('v621Prospect').value.trim()||'{Prospect Name}');
+  const deceased=()=>($('v621Deceased').value.trim()||'{deceased name}');
+  const address=()=>($('v621Address').value.trim()||'{property address}');
+
+  const FLOW={
+    opening:{label:'Opening — Deceased Owner / Family Member',script:()=>`Hi, ${prospect()}, [wait] Hey my name is ${caller()}, I'm with SMH Oklahoma. I’m reaching out to you regarding the estate of ${deceased()}. It’s my understanding you are one of the family members, is that correct?`,instruction:'',buttons:[['Not Interested','notInterested','secondary'],['Yes - Correct Person','familyPlans','success'],['No - Wrong Person','wrongPerson','danger'],['Voicemail / No answer','voicemail','danger']]},
+
+    notInterested:{label:'Not Interested',script:'I’m sorry, you’re not interested in what exactly? I haven’t told you why I called .',instruction:'',buttons:[]},
+    contactCheck:{label:'Confirm Appropriate Contact',script:'Are you also a good person to discuss details regarding the estate?',instruction:'',buttons:[['Yes','familyPlans','success'],['No','findCorrectContact','danger']]},
+    wrongPerson:{label:'Wrong Person',script:()=>`Oh I apologize, I’m looking for ${prospect()} regarding ${deceased()} do you know them or do I have the wrong number?`,instruction:'',buttons:[['Yes, I know them','contactCheck','success'],['Wrong Number / Don’t know them','wrongNumberEnd','danger']]},
+    findCorrectContact:{label:'Find Correct Contact',script:'Try to get contact info for who were looking for and end call',instruction:'',buttons:[]},
+    wrongNumberEnd:{label:'Wrong Number',script:'I apologize for the inconvenience. Thank you for your time.',instruction:'',buttons:[]},
+    voicemail:{label:'Voicemail / No Answer',script:()=>`Hey ${prospect()} this is ${caller()} with SMH Oklahoma. I’m reaching out to you regarding the estate of ${deceased()}. Could you please give me a call back when you have a moment? Thank you`,instruction:'',buttons:[]},
+
+    familyPlans:{label:'Plans for the Home / Foreclosure',script:'Awesome! My company assists a lot of families here in town with foreclosures and probates when they’re needing to sell. We wanted to check to see what your plans are for the home and the foreclosure?',instruction:'',buttons:[['Handled / Covered, Not Interested','handled','end'],['Unsure','unsure','success'],['Need to sell / will be for sale','propertyStatus','success'],['We’re not selling.','notSelling','danger'],['Not a good time to talk.','notGoodTime','secondary']]},
+    handled:{label:'Handled / Covered, Not Interested',script:'Got it . Well I appreciate you taking my call . I hope you have a wonderful day .',instruction:'',buttons:[]},
+    propertyStatus:{label:'Property Sale Status',script:'That’s great to hear. Just to be clear, you’re saying you already sold the property?',instruction:'',buttons:[['Yes -- It’s Sold','sold','secondary'],['No -- We’re not selling','notSelling','danger'],['We already have a realtor','realtor','success'],['We already have an attorney','attorney','success'],['No -- other reason','otherReason','secondary']]},
+    sold:{label:'Property Sold',script:'That’s great to hear. Just to be clear, you’re saying you already sold the property?',instruction:'',buttons:[]},
+    notSelling:{label:'Not Selling / Keeping Property',script:'Okay I understand . If you don’t mind me asking, if you’re not selling, how are you planning to save the home from foreclosure?',instruction:'',buttons:[['Wanting to save the property','saveProperty','success'],['Unsure because of how much work needs to be done','unsureWork','success']]},
+    unsure:{label:'Unsure',script:'I completely understand, there is a lot to figure out. If you don’t mind me asking, are you unsure because of how much needs done before you can sell or are you thinking about trying to save the property?',instruction:'',buttons:[['Wanting to save the property','saveProperty','success'],['Unsure because of how much works needs to be done','unsureWork','success']]},
+    saveProperty:{label:'Wanting to Save the Property',script:'Okay I understand . I appreciate you talking with me . Just so you’re aware if you do decide to sell– Our company both makes investments in properties and we are licensed realtors. We even have a program where we partner with our clients and cover their repairs for on market sales to help them sell for more money. We have multiple options for whatever best serves our clients needs. Would it be okay if we keep in touch with you as things progress?',instruction:'',buttons:[['Yes','saveFollowup','success'],['No','endCall','danger']]},
+    unsureWork:{label:'Unsure — Work Needed',script:'I completely understand. Probates are a ton of work, we get it, we work on them every day. Just so you’re aware if you do decide to sell– Our company both makes investments in properties and we are licensed realtors. We have a few options available to our clients . We also facilitate estate sale and the whole probate process from start to finish . Do you have any interest in exploring our as is sales options to help handle some of this work load for you?',instruction:'',buttons:[['Yes, I’d be interested','estateAssistance','success'],['No, not at this time','endCall','danger']]},
+    saveFollowup:{label:'Follow-Up — Save Property',script:'Okay great. I’ll shoot you a text when we hop off the phone so that you have my information. Does 2-3 weeks work to check back in with you?',instruction:'',buttons:[]},
+    estateAssistance:{label:'Estate Sale Assistance',script:'I completely understand. Probates are a ton of work, we get it, we work on them every day. Just so you’re aware if you do decide to sell– Our company both makes investments in properties and we are licensed realtors. We have a few options available to our clients . We also facilitate estate sale and the whole probate process from start to finish .',instruction:'',buttons:[]},
+    realtor:{label:'Realtor Involvement',script:'Oh got it . We are a licensed real estate firm as well. Have you already hired them or are you still in the process of selecting a realtor?',instruction:'',buttons:[['We’ve already hired them .','realtorHired','secondary'],['We’re still deciding.','realtorChoosing','success']]},
+    realtorHired:{label:'Realtor Already Hired',script:'Perfect, sounds like you’re in good hands . Thank you for your time today . I hope you have a great rest of your day .',instruction:'',buttons:[]},
+    realtorChoosing:{label:'Still Selecting a Realtor',script:'Perfect. We would certainly love the opportunity to represent you if you’re still interviewing agents. Would it be okay if our owner Zach reached out to you to see if we may be a good fit to serve your needs?',instruction:'',buttons:[['Yes','realtorHandoff','success'],['No','endCall','danger']]},
+    attorney:{label:'Attorney Involved',script:'That’s great to hear . Just to be clear, we are not a law firm, we are a real estate firm . We help families with selling inheritance properties once the probate is finalized . We would like to make an offer on the property or to assist as your realtor if you’re planning to list the property . Do you already have a plan in place for the sale of the home?',instruction:'',buttons:[['No we don’t and we’re not ready .','notReady','secondary'],['Yes, i think we already have it sold .','sold','secondary'],['Oh, yes we are selling .','sellingNow','success']]},
+    otherReason:{label:'Other Reason',script:'Okay great . We would be very interested in taking a look at the property . Are you already accepting offers on the property?',instruction:'',buttons:[['No, not yet','notAccepting','secondary'],['Yes I’m/we’re ready to accept/ hear offers','accepting','success']]},
+    notReady:{label:'Not Ready to Sell',script:'I completely understand. Probates are a ton of work, we get it, we work on them every day as well (haha, take a pause). If you don’t mind me asking, what all needs to happen in order for you to be ready to discuss the sale further?',instruction:'',buttons:[]},
+    notReadyTimeline:{label:'Timeline',script:'Okay great, and do you have an idea of the time-frame for that?',instruction:'',buttons:[]},
+    notReadyFollowup:{label:'Follow-Up',script:'Okay perfect . Well, we are very interested in the property . I’d like to keep in touch as things progress. Would it it be okay if I reach back out in Blank days/ weeks?',instruction:'',buttons:[]},
+    notReadyText:{label:'Confirm Text Number',script:'Okay perfect . When we hop off the phone I’d like to send you a text with all of our information so that you have it . Is this the best number to text you at?',instruction:'',buttons:[]},
+    sellingNow:{label:'Selling the Property',script:'That’s great to hear . Just to be clear, we are not a law firm, we are a real estate firm . We help families with selling inheritance properties once the probate is finalized . We would like to make an offer on the property or to assist as your realtor if you’re planning to list the property . Do you already have a plan in place for the sale of the home?',instruction:'',buttons:[['No we don’t and we’re not ready .','notReady','secondary'],['Yes, i think we already have it sold .','sold','secondary'],['Oh, yes we are selling .','accepting','success']]},
+    notAccepting:{label:'Not Yet Accepting Offers',script:'Okay gotcha . What all needs to happen in order for you to be ready to sell',instruction:'',buttons:[]},
+    accepting:{label:'Accepting Offers',script:'Okay great. Just so you’re aware our company both makes investments in properties and we are licensed realtors. We have a few options available to our clients and our home specialist Zach will be able to present those options to you . How can we go about seeing the property -- Is there a time today or tomorrow that works to meet?',instruction:'',buttons:[['Appointment / Set Appt','estateAppointment','success']]},
+    estateAppointment:{label:'Appointment / Set Appointment',script:'Okay great . I’ve got you scheduled with our home specialist Zach . He will be reaching out after our call to confirm the appointment and may have a few additional questions . Is this a good number to text you at?',instruction:'',buttons:[]},
+    estateHandoff:{label:'Handoff',script:'Perfect, I got it . *Prospect* when we hop off the phone I’m going to send you a text from the number Zach will be reaching out on that will have all of our information on it, so you have it. I really appreciate you taking the time to speak with me today. I hope you have a great rest of your day .',instruction:'',buttons:[]},
+    realtorHandoff:{label:'Realtor Follow-Up',script:'Awesome, what’s your availability look like the rest of the day?',instruction:'',buttons:[]},
+    realtorHandoffText:{label:'Confirm Contact Number',script:'Perfect. I’m gonna pass along the details of our conversation to Zach and have him reach out. When we hop off the phone I’ll send you a text on his number. is this the best number to reach out at?',instruction:'',buttons:[]},
+    notGoodTime:{label:'Not a Good Time to Talk',script:'I completely understand. Before we hop off the call, when is a better time to reach you?',instruction:'',buttons:[]},
+    followupEnd:{label:'Follow-Up Complete',script:'Great, I’ll get that sent over . Thank you so much for your time today, I’ll talk with you later .',instruction:'',buttons:[]},
+    endCall:{label:'Call Complete',script:'Okay understood . Well I appreciate your time and I hope you have a great rest of your day',instruction:'',buttons:[]}
+  };
+
+  function render(next){
+    step=next;
+    if(!path)path='preprobate';
+    const item=FLOW[next]; if(!item){console.error('V6.21 step not found:',path,next);return;}
+    title.textContent='FORECLOSURE / PRE-PROBATE';scriptNode.textContent=typeof item.script==='function'?item.script():item.script;instructionNode.textContent=item.instruction||'Choose the response that matches what the person says.';progressNode.textContent='Current step: '+item.label;
+    buttonsNode.className='buttons';buttonsNode.replaceChildren();
+    item.buttons.forEach(([label,dest,style])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.className=style==='success'?'v621-success':style==='danger'?'v621-danger':style==='end'?'v621-end':'v621-secondary';b.addEventListener('click',()=>{
+      if(dest==='showQualification'){showQualification(true);return;}
+      history.push(step);render(dest);
+    });buttonsNode.appendChild(b);});
+    if(next==='qualifying'){showQualification();}else if(next!=='showQualification'&&leadFormShown){qualificationHost.innerHTML='';leadFormShown=false;}
+    backButton.disabled=history.length===0;
+  }
+  function showQualification(forceReset){
+    if(!leadFormShown){qualificationHost.innerHTML='<div id="leadQualification"></div>';leadFormShown=true;}
+    if((forceReset||!$('leadQualification').hasChildNodes())&&window.lqStartNewLead)window.lqStartNewLead();
+    const form=$('leadQualification');if(form)form.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  window.openV621Workflow=function(){priorFocus=document.activeElement;const oldForm=document.getElementById('leadQualification');if(oldForm&&!qualificationHost.contains(oldForm))oldForm.remove();path='preprobate';history=[];qualificationHost.innerHTML='';leadFormShown=false;render('opening');const card=document.querySelector('.main-card');const cardBody=card?.querySelector('.card-body');if(cardBody&&overlay.parentElement!==cardBody)cardBody.appendChild(overlay);card&&card.classList.add('v621-mode-active');document.getElementById('foreclosureMode')?.classList.remove('active');document.getElementById('probateMode')?.classList.remove('active');document.getElementById('foreclosurePreProbateMode')?.classList.add('active');overlay.classList.add('is-visible');overlay.setAttribute('aria-hidden','false');overlay.style.display='block';document.documentElement.style.overflow='';window.v621Active=true;};
+  window.v621GoTo=function(next){if(!path)return;history.push(step);render(next);};
+  window.v621Active=false;
+  const originalSwitchMode=window.switchMode;
+  if(typeof originalSwitchMode==='function'){window.switchMode=function(){if(window.v621Active)window.closeV621Workflow();document.getElementById('foreclosurePreProbateMode')?.classList.remove('active');return originalSwitchMode.apply(this,arguments);};}
+  window.v621Back=function(){if(!history.length)return;const prev=history.pop();render(prev);};
+  window.v621Home=function(){history=[];qualificationHost.innerHTML='';leadFormShown=false;render('opening');};
+  window.closeV621Workflow=function(){overlay.classList.remove('is-visible');overlay.setAttribute('aria-hidden','true');overlay.style.display='none';const card=document.querySelector('.main-card');if(card)card.classList.remove('v621-mode-active');document.getElementById('foreclosurePreProbateMode')?.classList.remove('active');document.documentElement.style.overflow='';window.v621Active=false;qualificationHost.innerHTML='';leadFormShown=false;if(priorFocus&&priorFocus.focus)priorFocus.focus();};
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&window.v621Active)window.closeV621Workflow();});
+})();
+</script>
+
+
+
+
+
+
 </body>
 </html>
 
+
+
+
+
+<style id="v621-final-targeted-fixes">
+@media (min-width:901px) {
+  .left-panel #foreclosurePreProbateMode {
+    position:fixed !important;
+    top:129px !important;
+    left:calc(50vw - 440px) !important;
+    right:auto !important;
+    width:130px !important;
+    height:40px !important;
+    min-height:40px !important;
+    margin:0 !important;
+    z-index:1001 !important;
+    /* inherit the same .mode-button appearance and transitions as the first two buttons */
+  }
+  .left-panel .counter-panel {
+    margin-top:0 !important;
+    top:205px !important;
+  }
+}
+.main-card.v621-mode-active > .card-body > .foreclosureInfo,
+.main-card.v621-mode-active > .card-body > .probateInfo,
+.main-card.v621-mode-active > .card-body > #flowArea {
+  display:none !important;
+}
+.main-card.v621-mode-active > .card-body > #v621Overlay.is-visible {
+  display:block !important;
+  width:100% !important;
+  position:relative !important;
+  inset:auto !important;
+  margin:0 !important;
+  padding:0 !important;
+  background:transparent !important;
+}
+#v621Buttons.buttons { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:7px !important; }
+#v621Buttons.buttons button { width:100%; min-height:36px; border:0; border-radius:6px; padding:9px 10px; color:#fff; font-size:11px; font-weight:800; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,.14); }
+#v621Buttons.buttons button.v621-success { background:#16a34a; }
+#v621Buttons.buttons button.v621-danger { background:#dc2626; }
+#v621Buttons.buttons button.v621-secondary { background:#2563eb; }
+#v621Buttons.buttons button.v621-end { background:#dc2626; }
+</style>
