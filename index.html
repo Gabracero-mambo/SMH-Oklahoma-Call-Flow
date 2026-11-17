@@ -2827,9 +2827,9 @@
             <section class="stats-section stats-overall-section">
                 <h3>THIS WEEK · MONDAY–SUNDAY</h3>
                 <div class="stats-row"><span>Total Dials</span><span class="stats-count" id="statWeeklyDials">0</span></div>
-                <div class="stats-row"><span>Yes / Correct Person</span><span class="stats-count" id="statWeeklyYes">1</span></div>
+                <div class="stats-row"><span>Yes / Correct Person</span><span class="stats-count" id="statWeeklyYes">0</span></div>
                 <div class="stats-row"><span>Wrong Person</span><span class="stats-count" id="statWeeklyWrong">0</span></div>
-                <div class="stats-row"><span>Voicemail / No Answer</span><span class="stats-count" id="statWeeklyVoicemail">1</span></div>
+                <div class="stats-row"><span>Voicemail / No Answer</span><span class="stats-count" id="statWeeklyVoicemail">0</span></div>
                 <div class="stats-row stats-handoff-row"><span>Successful Handoffs</span><span class="stats-count" id="statWeeklyHandoff">0</span></div>
             </section>
             <div class="stats-grid">
@@ -2843,14 +2843,14 @@
                 </section>
                 <section class="stats-section">
                     <h3>PROBATE · WEEK</h3>
-                    <div class="stats-row"><span>Yes — Correct Person</span><span class="stats-count" id="statWeeklyProbateYes">1</span></div>
+                    <div class="stats-row"><span>Yes — Correct Person</span><span class="stats-count" id="statWeeklyProbateYes">0</span></div>
                     <div class="stats-row"><span>No — Wrong Person</span><span class="stats-count" id="statWeeklyProbateNo">0</span></div>
-                    <div class="stats-row"><span>Voicemail / No Answer</span><span class="stats-count" id="statWeeklyProbateVoicemail">1</span></div>
+                    <div class="stats-row"><span>Voicemail / No Answer</span><span class="stats-count" id="statWeeklyProbateVoicemail">0</span></div>
                     <div class="stats-row stats-handoff-row"><span>Successful Handoffs</span><span class="stats-count" id="statWeeklyProbateHandoff">0</span></div>
                 </section>
             </div>
             <div class="stats-history-card" style="margin-top:12px;">
-                <div class="stats-history-scroll"><table class="stats-history-table"><thead><tr><th>Shift</th><th>Dials</th><th>Correct</th><th>Wrong</th><th>Voicemail</th><th>Handoffs</th></tr></thead><tbody id="statsWeeklyBody"><tr><td>Mon, Nov 16, 2026</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr></tbody></table></div>
+                <div class="stats-history-scroll"><table class="stats-history-table"><thead><tr><th>Shift</th><th>Dials</th><th>Correct</th><th>Wrong</th><th>Voicemail</th><th>Handoffs</th></tr></thead><tbody id="statsWeeklyBody"><tr><td colspan="6" class="stats-history-empty">No completed shifts logged this week yet.</td></tr></tbody></table></div>
                 <div class="stats-history-note">Each row is one Oklahoma workday stats rollover (3 hours after shift end). The current shift is included automatically.</div>
             </div>
         </div>
@@ -2908,7 +2908,7 @@
                 +
             </button>
 
-            <button type="button" id="counterValue" class="counter-value" title="Click to subtract one call; hover to see the last counter click" aria-label="Decrease call counter by one" onclick="decrementCounter()">0</button>
+            <button type="button" id="counterValue" class="counter-value" title="Click to subtract one call; hover to see the last counter click" aria-label="Decrease call counter by one" onclick="decrementCounter()">4</button>
 
             <div id="counterTimeTooltip" class="counter-time-tooltip" role="status" aria-hidden="true">
                 <div class="counter-time-tooltip-title">CALL COUNTER</div>
@@ -2922,7 +2922,7 @@
 
         </div>
 
-        <section class="sales-numbers-panel" id="salesNumbersPanel" aria-label="Sales numbers">
+        <section class="sales-numbers-panel" id="salesNumbersPanel" aria-label="Sales numbers" style="position: fixed; inset: 193.047px auto auto 2.36328px; margin: 0px;">
             <div class="sales-numbers-header" id="salesNumbersDragHandle" title="Drag to move Sales Numbers">
                 <div class="sales-numbers-title">SALES NUMBERS</div>
                 <span class="sales-numbers-drag-hint" aria-hidden="true">⋮⋮</span>
@@ -3204,9 +3204,9 @@ https://sellmyhomeoklahoma.com/</div></div></article><article class="kb-result">
     </div>
 </div>
 
-<div id="philippineClock" class="philippine-clock" aria-label="Current Philippine time">12:37:38 AM</div>
+<div id="philippineClock" class="philippine-clock" aria-label="Current Philippine time">05:09:38 AM</div>
 
-<div id="oklahomaClock" class="oklahoma-clock" aria-label="Current Oklahoma time">10:37:38 AM</div>
+<div id="oklahomaClock" class="oklahoma-clock" aria-label="Current Oklahoma time">03:09:38 PM</div>
 
 
 <script>
@@ -6113,8 +6113,23 @@ function renderKnowledgeBaseResults() {
  const input = document.getElementById("knowledgeBaseSearch");
  const results = document.getElementById("knowledgeBaseResults");
  if (!input || !results) return;
- const query = input.value.trim().toLowerCase();
- const matches = smhKnowledgeBaseEntries.filter(entry => !query || (entry.title+" "+entry.category+" "+entry.keywords+" "+entry.answer).toLowerCase().includes(query));
+ const terms = input.value
+   .toLowerCase()
+   .trim()
+   .split(/\s+/)
+   .filter(Boolean);
+ const matches = smhKnowledgeBaseEntries.filter(entry => {
+   if (!terms.length) return true;
+   const searchableText = [
+     entry.title,
+     entry.category,
+     entry.keywords,
+     entry.answer,
+     ...(Array.isArray(entry.followUps) ? entry.followUps : []),
+     ...(Array.isArray(entry.trainingNotes) ? entry.trainingNotes : [])
+   ].filter(Boolean).join(" ").toLowerCase();
+   return terms.every(term => searchableText.includes(term));
+ });
  results.innerHTML = "";
  if (!matches.length) {
    results.innerHTML = '<div class="kb-empty">No matching entry yet. Try another keyword or ask your team to add an approved answer.</div>';
@@ -6155,10 +6170,13 @@ function initializeKnowledgeBase() {
  const input = document.getElementById("knowledgeBaseSearch");
  const clear = document.getElementById("knowledgeBaseClear");
  if (input && !input.dataset.kbInitialized) {
-   input.addEventListener("input", function(){
+   const updateKnowledgeBaseSearch = function(){
      renderKnowledgeBaseResults();
      armKnowledgeBaseAutoHome();
-   });
+   };
+   input.addEventListener("input", updateKnowledgeBaseSearch);
+   input.addEventListener("search", updateKnowledgeBaseSearch);
+   input.addEventListener("change", updateKnowledgeBaseSearch);
    input.dataset.kbInitialized = "true";
  }
  if (clear && input && !clear.dataset.kbInitialized) {
